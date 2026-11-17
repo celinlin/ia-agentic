@@ -6,1103 +6,675 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Agents LLM en 60 minutes</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="theme-color" content="#F2F2F7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout : une colonne façon iOS (≤ 680px), grands titres, listes groupées en verre, barre flottante « Liquid Glass » en bas avec sommaire et chrono */
+/* Layout : app plein écran. Accueil = liste de modules ; leçon = une carte par écran, barre de progression type « stories », bouton Continuer en bas, balayage horizontal */
 :root{
-  --bg:#F2F2F7; --bg-tint-1:rgba(0,122,255,.20); --bg-tint-2:rgba(175,82,222,.16); --bg-tint-3:rgba(52,199,89,.14);
-  --label:#000000; --label2:rgba(60,60,67,.62); --label3:rgba(60,60,67,.36); --sep:rgba(60,60,67,.18);
-  --fill:rgba(120,120,128,.12); --cell:rgba(255,255,255,.78);
-  --glass:rgba(255,255,255,.52); --glass-strong:rgba(255,255,255,.72); --glass-edge:rgba(255,255,255,.85); --glass-shadow:rgba(0,0,0,.10);
+  --bg:#F2F2F7; --tint1:rgba(0,122,255,.20); --tint2:rgba(175,82,222,.15); --tint3:rgba(52,199,89,.13);
+  --label:#000; --label2:rgba(60,60,67,.62); --label3:rgba(60,60,67,.30); --sep:rgba(60,60,67,.16);
+  --fill:rgba(120,120,128,.12); --cell:rgba(255,255,255,.80);
+  --glass:rgba(255,255,255,.58); --glass-strong:rgba(255,255,255,.78); --edge:rgba(255,255,255,.9); --shadow:rgba(0,0,0,.08);
   --blue:#007AFF; --green:#34C759; --red:#FF3B30; --orange:#FF9500; --indigo:#5856D6; --pink:#FF2D55; --teal:#30B0C7; --purple:#AF52DE;
-  --code-bg:#1C1C1E; --code-ink:#F2F2F7; --code-dim:#8E8E93; --code-key:#FF7AB2; --code-str:#FC6A5D;
-  --f-text:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
-  --f-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", system-ui, sans-serif;
-  --f-mono:ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
-  --r-lg:22px; --r-md:14px;
+  --ok-soft:rgba(52,199,89,.14); --bad-soft:rgba(255,59,48,.12);
+  --code-bg:#1C1C1E; --code-ink:#F2F2F7; --code-dim:#8E8E93; --code-str:#FC6A5D; --code-key:#FF7AB2;
+  --f:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;
+  --fd:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",system-ui,sans-serif;
+  --fm:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#000000; --bg-tint-1:rgba(10,132,255,.28); --bg-tint-2:rgba(191,90,242,.22); --bg-tint-3:rgba(48,209,88,.14);
-  --label:#FFFFFF; --label2:rgba(235,235,245,.62); --label3:rgba(235,235,245,.32); --sep:rgba(84,84,88,.6);
-  --fill:rgba(118,118,128,.24); --cell:rgba(28,28,30,.72);
-  --glass:rgba(40,40,44,.48); --glass-strong:rgba(44,44,48,.72); --glass-edge:rgba(255,255,255,.16); --glass-shadow:rgba(0,0,0,.5);
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#000; --tint1:rgba(10,132,255,.26); --tint2:rgba(191,90,242,.20); --tint3:rgba(48,209,88,.12);
+  --label:#fff; --label2:rgba(235,235,245,.62); --label3:rgba(235,235,245,.28); --sep:rgba(84,84,88,.55);
+  --fill:rgba(118,118,128,.24); --cell:rgba(30,30,32,.75);
+  --glass:rgba(38,38,42,.55); --glass-strong:rgba(44,44,48,.82); --edge:rgba(255,255,255,.14); --shadow:rgba(0,0,0,.45);
   --blue:#0A84FF; --green:#30D158; --red:#FF453A; --orange:#FF9F0A; --indigo:#5E5CE6; --pink:#FF375F; --teal:#40C8E0; --purple:#BF5AF2;
-  --code-bg:#1C1C1E; color-scheme:dark}}
+  --ok-soft:rgba(48,209,88,.18); --bad-soft:rgba(255,69,58,.18); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#000000; --bg-tint-1:rgba(10,132,255,.28); --bg-tint-2:rgba(191,90,242,.22); --bg-tint-3:rgba(48,209,88,.14);
-  --label:#FFFFFF; --label2:rgba(235,235,245,.62); --label3:rgba(235,235,245,.32); --sep:rgba(84,84,88,.6);
-  --fill:rgba(118,118,128,.24); --cell:rgba(28,28,30,.72);
-  --glass:rgba(40,40,44,.48); --glass-strong:rgba(44,44,48,.72); --glass-edge:rgba(255,255,255,.16); --glass-shadow:rgba(0,0,0,.5);
+  --bg:#000; --tint1:rgba(10,132,255,.26); --tint2:rgba(191,90,242,.20); --tint3:rgba(48,209,88,.12);
+  --label:#fff; --label2:rgba(235,235,245,.62); --label3:rgba(235,235,245,.28); --sep:rgba(84,84,88,.55);
+  --fill:rgba(118,118,128,.24); --cell:rgba(30,30,32,.75);
+  --glass:rgba(38,38,42,.55); --glass-strong:rgba(44,44,48,.82); --edge:rgba(255,255,255,.14); --shadow:rgba(0,0,0,.45);
   --blue:#0A84FF; --green:#30D158; --red:#FF453A; --orange:#FF9F0A; --indigo:#5E5CE6; --pink:#FF375F; --teal:#40C8E0; --purple:#BF5AF2;
-  --code-bg:#1C1C1E; color-scheme:dark}
+  --ok-soft:rgba(48,209,88,.18); --bad-soft:rgba(255,69,58,.18); color-scheme:dark}
 
 [hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
-body{background:var(--bg);color:var(--label);font-family:var(--f-text);font-size:17px;line-height:1.47;letter-spacing:-.022em;
-  -webkit-font-smoothing:antialiased;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--label);font-family:var(--f);font-size:17px;line-height:1.45;letter-spacing:-.022em;
+  -webkit-font-smoothing:antialiased;overflow:hidden;overscroll-behavior:none}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
-/* fond coloré flou derrière le verre */
-.aura{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:var(--bg)}
+.aura{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .aura i{position:absolute;border-radius:50%;filter:blur(60px)}
-.aura i:nth-child(1){width:70vmax;height:70vmax;left:-30vmax;top:-25vmax;background:var(--bg-tint-1)}
-.aura i:nth-child(2){width:60vmax;height:60vmax;right:-30vmax;top:30vh;background:var(--bg-tint-2)}
-.aura i:nth-child(3){width:55vmax;height:55vmax;left:-15vmax;bottom:-30vmax;background:var(--bg-tint-3)}
-
-a{color:var(--blue);text-decoration:none}
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:8px}
-h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+.aura i:nth-child(1){width:80vmax;height:80vmax;left:-35vmax;top:-35vmax;background:var(--tint1)}
+.aura i:nth-child(2){width:65vmax;height:65vmax;right:-35vmax;top:25%;background:var(--tint2)}
+.aura i:nth-child(3){width:60vmax;height:60vmax;left:-20vmax;bottom:-35vmax;background:var(--tint3)}
+button{font:inherit;color:inherit;letter-spacing:inherit;border:0;background:none;cursor:pointer;padding:0}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:10px}
+code{font-family:var(--fm);font-size:.84em;background:var(--fill);padding:.06em .32em;border-radius:6px;letter-spacing:0}
+h1,h2,h3{margin:0;font-family:var(--fd);text-wrap:balance}
 p{margin:0}
-code{font-family:var(--f-mono);font-size:.84em;background:var(--fill);padding:.08em .32em;border-radius:6px;letter-spacing:0}
-button{font:inherit;color:inherit;letter-spacing:inherit}
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
+  border:.5px solid var(--edge);box-shadow:inset 0 1px 0 var(--edge),0 8px 28px var(--shadow)}
+.ic{display:inline-grid;place-items:center;color:#fff;font-weight:700;font-family:var(--fd);flex:none;letter-spacing:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0)),var(--c,var(--blue))}
 
-.page{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:56px;
-  padding-block:28px calc(120px + env(safe-area-inset-bottom,0px))}
+.app{position:relative;z-index:1;height:100%;max-width:560px;margin:0 auto}
+.view{position:absolute;inset:0;display:flex;flex-direction:column}
 
-/* verre */
-.glass{background:var(--glass);-webkit-backdrop-filter:blur(28px) saturate(190%);backdrop-filter:blur(28px) saturate(190%);
-  border:.5px solid var(--glass-edge);box-shadow:inset 0 1px 0 var(--glass-edge),0 10px 34px var(--glass-shadow)}
+/* ---------- ACCUEIL ---------- */
+#home{overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:28px 32px;gap:26px}
+.hello{display:flex;flex-direction:column;gap:8px}
+.hello small{font-size:13px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.02em}
+.hello h1{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.05}
+.hello p{font-size:17px;color:var(--label2)}
+.resume{display:flex;align-items:center;gap:16px;padding:18px;border-radius:24px;text-align:left;width:100%}
+.ring{width:64px;height:64px;flex:none;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:7}
+.ring .tr{stroke:var(--fill)} .ring .pr{stroke:var(--blue);stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.resume .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.resume .tx span{font-size:13px;color:var(--label2)}
+.resume .tx b{font-size:19px;font-weight:700;letter-spacing:-.025em}
+.resume .go{width:44px;height:44px;border-radius:50%;background:var(--blue);display:grid;place-items:center;flex:none}
+.resume .go svg{width:18px;height:18px;fill:#fff;margin-left:3px}
+.sec{font-size:13px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.02em;padding-left:16px;margin-bottom:-18px}
+.mods{border-radius:24px;overflow:hidden}
+.mod{display:flex;align-items:center;gap:14px;padding:14px 16px;width:100%;text-align:left;position:relative;min-height:72px}
+.mod + .mod::before{content:"";position:absolute;top:0;left:68px;right:0;border-top:.5px solid var(--sep)}
+.mod:active{background:var(--fill)}
+.mod .ic{width:38px;height:38px;border-radius:10px;font-size:17px}
+.mod .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.mod .tx b{font-size:17px;font-weight:600;line-height:1.2}
+.mod .tx span{font-size:13px;color:var(--label2);font-variant-numeric:tabular-nums}
+.mbar{height:4px;border-radius:2px;background:var(--fill);overflow:hidden}
+.mbar i{display:block;height:100%;background:var(--c);border-radius:2px}
+.mod .chev{width:9px;height:9px;border-right:2px solid var(--label3);border-top:2px solid var(--label3);transform:rotate(45deg);flex:none;margin-right:4px}
+.mod .done{width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.foot{display:flex;justify-content:center}
+.foot button{color:var(--label2);font-size:15px;padding:10px 14px;border-radius:12px}
+.foot button.armed{color:var(--red);font-weight:600}
 
-/* hero */
-.hero{display:flex;flex-direction:column;gap:14px}
-.overline{font-size:13px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.02em}
-.hero h1{font-size:clamp(34px,9vw,48px);font-weight:800;letter-spacing:-.035em;line-height:1.05}
-.hero .lede{font-size:19px;line-height:1.4;color:var(--label2);letter-spacing:-.025em}
-.rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
-.ring-card{border-radius:var(--r-lg);padding:14px;display:flex;flex-direction:column;gap:2px}
-.ring-card .v{font-family:var(--f-display);font-size:28px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.ring-card .l{font-size:13px;color:var(--label2);line-height:1.25}
-.chip-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 6px}
-.chip-row::-webkit-scrollbar{display:none}
-.chip{flex:none;display:flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border-radius:99px;font-size:15px;font-weight:500;color:var(--label)}
-.chip.glass{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--glass-strong);box-shadow:inset 0 1px 0 var(--glass-edge),0 4px 14px var(--glass-shadow)}
-.chip .ic{width:26px;height:26px;font-size:13px;border-radius:8px}
+/* ---------- LEÇON ---------- */
+.lbar{display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));flex:none}
+.round{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none}
+.round svg{width:16px;height:16px;stroke:var(--label);stroke-width:2.4;fill:none;stroke-linecap:round}
+.segs{flex:1;display:flex;gap:4px;min-width:0}
+.segs i{flex:1;height:5px;border-radius:3px;background:var(--fill);overflow:hidden;position:relative}
+.segs i::after{content:"";position:absolute;inset:0;background:var(--c,var(--blue));transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+.segs i.on::after{transform:scaleX(1)}
+.count{font-size:13px;color:var(--label2);font-variant-numeric:tabular-nums;min-width:38px;text-align:right}
+.stage{flex:1;position:relative;overflow:hidden;touch-action:pan-y}
+.card{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:18px max(22px,env(safe-area-inset-right,0px)) 24px max(22px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:18px;transition:transform .38s cubic-bezier(.2,.85,.25,1),opacity .3s ease}
+.card.in-r{transform:translateX(40px);opacity:0}
+.card.in-l{transform:translateX(-40px);opacity:0}
+.card.out-l{transform:translateX(-40px);opacity:0;pointer-events:none}
+.card.out-r{transform:translateX(40px);opacity:0;pointer-events:none}
+.kicker{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--c,var(--blue))}
+.kicker .ic{width:22px;height:22px;border-radius:6px;font-size:11px}
+.card h2{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.12}
+.sub{font-size:16px;color:var(--label2);line-height:1.45}
+.big-idea{font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1.2;font-family:var(--fd)}
+.big-idea em{font-style:normal;color:var(--c,var(--blue))}
 
-/* icône style Réglages */
-.ic{display:inline-grid;place-items:center;color:#fff;font-weight:700;font-family:var(--f-display);flex:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0)),var(--c,var(--blue))}
+.rows{border-radius:20px;overflow:hidden}
+.r{display:flex;gap:14px;padding:14px 16px;position:relative;align-items:flex-start}
+.r + .r::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--sep)}
+.r .n{width:28px;height:28px;border-radius:8px;font-size:13px;margin-top:1px}
+.r .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.r .t b{font-size:17px;font-weight:600}
+.r .t span{font-size:15px;color:var(--label2);line-height:1.4}
+.warnbox .r .n{--c:var(--orange)}
 
-/* modules */
-section.mod{display:flex;flex-direction:column;gap:22px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 16px)}
-.mod-head{display:flex;flex-direction:column;gap:12px}
-.mod-head .top{display:flex;align-items:center;gap:12px}
-.mod-head .ic{width:44px;height:44px;border-radius:12px;font-size:20px}
-.mod-head .meta{display:flex;flex-direction:column;line-height:1.25}
-.mod-head .meta b{font-size:15px;font-weight:600}
-.mod-head .meta span{font-size:13px;color:var(--label2)}
-h2{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.12}
-h3{font-size:22px;font-weight:700;letter-spacing:-.025em;line-height:1.2}
-.prose{display:flex;flex-direction:column;gap:12px}
-.prose ul,.prose ol{margin:0;padding-left:1.15rem;display:flex;flex-direction:column;gap:8px}
-.prose li::marker{color:var(--label3)}
-.key{border-radius:var(--r-lg);padding:18px;font-size:17px;line-height:1.45}
-.key::before{content:"L'essentiel";display:block;font-size:13px;font-weight:600;color:var(--c,var(--blue));margin-bottom:6px}
+.flow{display:flex;flex-direction:column;align-items:stretch}
+.node{border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:1px}
+.node b{font-size:16px;font-weight:600}
+.node span{font-size:14px;color:var(--label2)}
+.node.hl{background:var(--c);color:#fff;border:0;box-shadow:0 8px 22px var(--shadow)}
+.node.hl span{color:rgba(255,255,255,.85)}
+.arrow{height:26px;display:flex;align-items:center;gap:10px;padding-left:22px;font-size:12px;color:var(--label2)}
+.arrow::before{content:"";width:2px;height:100%;background:var(--label3);border-radius:1px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
-/* liste groupée iOS */
-.group-title{font-size:13px;color:var(--label2);text-transform:uppercase;letter-spacing:.02em;padding:0 16px;margin-bottom:-14px}
-.list{border-radius:var(--r-lg);overflow:hidden}
-.row{display:flex;flex-direction:column;gap:3px;padding:13px 16px;position:relative}
-.row + .row::before,.list details + details::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--sep)}
-.row .t{font-weight:600;font-size:17px}
-.row .s{font-size:15px;color:var(--label2);line-height:1.4}
-.row .s b{color:var(--label);font-weight:600}
-.list details{position:relative}
-.list summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:13px 16px;min-height:52px}
-.list summary::-webkit-details-marker{display:none}
-.list summary .ic{width:30px;height:30px;border-radius:8px;font-size:14px}
-.list summary .tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
-.list summary .tx b{font-weight:600}
-.list summary .tx span{font-size:14px;color:var(--label2)}
-.list summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--label3);border-bottom:2px solid var(--label3);transform:rotate(-45deg);transition:transform .2s;flex:none;margin-right:4px}
-.list details[open] summary::after{transform:rotate(45deg)}
-.list .body{padding:0 16px 16px 58px;font-size:15px;color:var(--label2);display:flex;flex-direction:column;gap:6px}
-.list .body b{color:var(--label);font-weight:600}
-
-/* encadré pièges */
-.warn{border-radius:var(--r-lg);padding:18px;display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.45}
-.warn .wt{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
-.warn .wt .ic{width:28px;height:28px;border-radius:8px;font-size:15px;--c:var(--orange)}
-.warn ul{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:8px}
-
-/* code */
-.code{display:flex;flex-direction:column;gap:8px;min-width:0}
-.code .cap{font-size:13px;color:var(--label2);padding:0 4px}
-pre{margin:0;background:var(--code-bg);color:var(--code-ink);font-family:var(--f-mono);font-size:12.5px;line-height:1.55;letter-spacing:0;
-  padding:16px;border-radius:var(--r-md);overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-pre .c{color:var(--code-dim)} pre .k{color:var(--code-key)} pre .s{color:var(--code-str)}
-
-/* segmented control */
-.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:2px;border-radius:10px;background:var(--fill);gap:2px}
-.seg button{border:0;background:transparent;border-radius:8px;padding:7px 4px;font-size:13px;font-weight:500;cursor:pointer;min-height:32px;white-space:nowrap}
-.seg button[aria-selected="true"]{background:var(--glass-strong);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
-
-/* flux vertical (remplace les schémas) */
-.flow{border-radius:var(--r-lg);padding:16px;display:flex;flex-direction:column;gap:0}
-.flow .lane{font-size:12px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.03em;margin:4px 0 8px}
-.flow .lane:not(:first-child){margin-top:16px}
-.node{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--cell)}
-.node .ic{width:28px;height:28px;border-radius:8px;font-size:13px}
-.node .tx{display:flex;flex-direction:column;line-height:1.25;min-width:0}
-.node .tx b{font-size:15px;font-weight:600}
-.node .tx span{font-size:13px;color:var(--label2)}
-.link{display:flex;align-items:center;gap:8px;height:26px;padding-left:24px;font-size:12px;color:var(--label2)}
-.link::before{content:"";width:2px;height:100%;background:var(--sep);border-radius:2px}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-
-/* labos */
-.lab{border-radius:var(--r-lg);padding:18px;display:flex;flex-direction:column;gap:16px}
-.lab .lt{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
-.lab .lt .ic{width:28px;height:28px;border-radius:8px;font-size:14px}
-.lab .hint{font-size:14px;color:var(--label2)}
-.lab label{font-size:15px;display:flex;flex-direction:column;gap:6px}
-.lab label .lv{display:flex;justify-content:space-between;color:var(--label2)}
-.lab label .lv b{color:var(--label);font-variant-numeric:tabular-nums}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--fill)}
-input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--fill)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;margin-top:-12px;box-shadow:0 3px 8px rgba(0,0,0,.2),0 0 0 .5px rgba(0,0,0,.06)}
-input[type=range]::-moz-range-thumb{width:28px;height:28px;border:0;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{border-radius:var(--r-md);background:var(--cell);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
-.stat .l{font-size:13px;color:var(--label2)}
-.stat .v{font-family:var(--f-display);font-size:28px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.stat .v.acc{color:var(--blue)}
-.stat .n{font-size:13px;color:var(--label2);font-variant-numeric:tabular-nums}
-select{font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:0;background:var(--fill);color:var(--label);width:100%}
-
-/* RRF */
-.rrf{display:flex;flex-direction:column;border-radius:var(--r-md);background:var(--cell);overflow:hidden}
-.rrf .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:12px 14px;position:relative}
-.rrf .r + .r::before{content:"";position:absolute;top:0;left:14px;right:0;border-top:.5px solid var(--sep)}
-.rrf .nm{font-size:15px;font-weight:600;line-height:1.3}
-.rrf .rank{font-family:var(--f-display);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;padding:2px 10px;border-radius:99px;background:var(--fill);align-self:start}
-.rrf .rank.first{background:var(--blue);color:#fff}
-.rrf .ins{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--label2)}
-.rrf input{width:64px;font:inherit;font-size:15px;text-align:center;padding:6px;border-radius:8px;border:0;background:var(--fill);color:var(--label);font-variant-numeric:tabular-nums}
-.rrf .sc{margin-left:auto;font-family:var(--f-mono);font-size:13px;color:var(--label);letter-spacing:0}
-
-/* simulateur iMessage */
-.chat{display:flex;flex-direction:column;gap:8px;min-height:140px}
-.b{max-width:86%;padding:9px 14px;border-radius:20px;font-size:16px;line-height:1.35;animation:pop .28s cubic-bezier(.2,.9,.3,1.2);min-width:0}
-.b.user{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
-.b.model{align-self:flex-start;background:var(--fill);border-bottom-left-radius:6px}
-.b.sys{align-self:center;max-width:94%;background:transparent;border:1px dashed var(--label3);color:var(--label2);font-size:14px;border-radius:14px;text-align:center}
-.b .who{display:block;font-size:11px;font-weight:600;opacity:.75;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
-.b pre{margin-top:6px;font-size:11px;padding:8px 10px;border-radius:10px;text-align:left}
-.b.user pre{background:rgba(0,0,0,.25)}
-@keyframes pop{from{transform:scale(.92) translateY(6px);opacity:0}to{transform:none;opacity:1}}
-.btns{display:flex;gap:10px}
-.btn{flex:1;min-height:50px;border-radius:14px;border:0;font-size:17px;font-weight:600;cursor:pointer;background:var(--fill);color:var(--blue)}
-.btn.fill{background:var(--blue);color:#fff}
-.btn:disabled{opacity:.4;cursor:default}
-.btn:active{transform:scale(.97)}
+pre{margin:0;background:var(--code-bg);color:var(--code-ink);font-family:var(--fm);font-size:12.5px;line-height:1.6;letter-spacing:0;
+  padding:16px;border-radius:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;flex:none}
+pre .c{color:var(--code-dim)} pre .s{color:var(--code-str)} pre .k{color:var(--code-key)}
 
 /* quiz */
-.quiz{display:flex;flex-direction:column;gap:22px}
-.quiz .qh{display:flex;align-items:center;gap:10px}
-.quiz .qh .ic{width:28px;height:28px;border-radius:8px;font-size:14px;--c:var(--indigo)}
-.quiz .qh b{font-size:22px;font-family:var(--f-display);letter-spacing:-.025em}
-.q{display:flex;flex-direction:column;gap:8px}
-.q .qt{font-weight:600;font-size:17px;padding:0 4px}
-.opts{border-radius:var(--r-lg);overflow:hidden}
-.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:transparent;padding:13px 16px;min-height:50px;font-size:16px;line-height:1.35;cursor:pointer;position:relative}
-.opt + .opt::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--sep)}
-.opt:active:not([disabled]){background:var(--fill)}
-.opt .mk{width:24px;height:24px;border-radius:50%;flex:none;border:1.5px solid var(--label3);display:grid;place-items:center;font-size:14px;font-weight:700;color:#fff}
+.qlabel{font-size:13px;font-weight:600;color:var(--indigo);display:flex;align-items:center;gap:8px}
+.qlabel .ic{width:22px;height:22px;border-radius:6px;font-size:12px;--c:var(--indigo)}
+.qq{font-size:24px;font-weight:700;letter-spacing:-.028em;line-height:1.22;font-family:var(--fd)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;padding:15px 16px;border-radius:16px;font-size:17px;line-height:1.3;min-height:56px;
+  transition:transform .15s ease,background .2s}
+.opt:active:not([disabled]){transform:scale(.98)}
+.opt .mk{width:26px;height:26px;border-radius:50%;flex:none;border:2px solid var(--label3);display:grid;place-items:center;color:#fff;font-size:14px;font-weight:800}
+.opt.right{background:var(--ok-soft);box-shadow:none}
 .opt.right .mk{background:var(--green);border-color:var(--green)}
+.opt.wrong{background:var(--bad-soft);box-shadow:none}
 .opt.wrong .mk{background:var(--red);border-color:var(--red)}
-.opt.right{font-weight:600}
+.opt.dim{opacity:.45}
 .opt[disabled]{cursor:default;color:var(--label)}
-.opt.dim{color:var(--label2)}
-.why{font-size:14px;color:var(--label2);padding:0 16px;line-height:1.4}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:var(--r-lg);padding:12px 16px;min-height:52px;font-weight:600}
-.switch{-webkit-appearance:none;appearance:none;width:51px;height:31px;border-radius:99px;background:var(--fill);position:relative;cursor:pointer;transition:background .25s;flex:none;margin:0}
-.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 0 0 .5px rgba(0,0,0,.04);transition:transform .25s cubic-bezier(.3,.7,.4,1.2)}
-.switch:checked{background:var(--green)}
-.switch:checked::after{transform:translateX(20px)}
-.next{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:var(--r-lg);padding:16px 18px;color:var(--label);min-height:64px}
-.next span{font-size:13px;color:var(--label2);display:block}
-.next b{font-size:17px}
-.next::after{content:"";width:10px;height:10px;border-right:2.5px solid var(--blue);border-top:2.5px solid var(--blue);transform:rotate(45deg);flex:none}
+.fb{border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;animation:rise .3s cubic-bezier(.2,.85,.25,1)}
+.fb b{font-size:17px}
+.fb.ok{background:var(--ok-soft)} .fb.ok b{color:var(--green)}
+.fb.ko{background:var(--bad-soft)} .fb.ko b{color:var(--red)}
+.fb span{font-size:15px;line-height:1.42}
+@keyframes rise{from{transform:translateY(8px);opacity:0}}
 
-/* mémo */
-.memo{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
-.memo div{border-radius:var(--r-lg);padding:16px;font-size:15px;line-height:1.45;display:flex;flex-direction:column;gap:6px}
-.memo b{font-size:17px;display:flex;align-items:center;gap:10px}
-.memo .ic{width:26px;height:26px;border-radius:7px;font-size:12px}
-@media (min-width:640px){.memo{grid-template-columns:1fr 1fr}}
+/* labs */
+.lab{border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.chat{display:flex;flex-direction:column;gap:8px;min-height:120px}
+.bub{max-width:88%;padding:9px 14px;border-radius:20px;font-size:16px;line-height:1.35;animation:pop .3s cubic-bezier(.2,.9,.3,1.2)}
+.bub small{display:block;font-size:11px;font-weight:600;opacity:.75;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+.bub.u{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.bub.m{align-self:flex-start;background:var(--fill);border-bottom-left-radius:6px}
+.bub.s{align-self:center;text-align:center;border:1.5px dashed var(--label3);color:var(--label2);font-size:14px;border-radius:14px}
+.bub pre{font-size:11px;padding:8px 10px;border-radius:10px;margin-top:6px}
+.bub.u pre{background:rgba(0,0,0,.25)}
+@keyframes pop{from{transform:scale(.9) translateY(6px);opacity:0}}
+.pill-btn{align-self:flex-start;padding:10px 16px;border-radius:99px;background:var(--fill);color:var(--blue);font-weight:600;font-size:15px}
+.rrf{display:flex;flex-direction:column;border-radius:16px;background:var(--cell);overflow:hidden}
+.rrf .rw{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;padding:12px 14px;position:relative}
+.rrf .rw + .rw::before{content:"";position:absolute;top:0;left:14px;right:0;border-top:.5px solid var(--sep)}
+.rrf .nm{font-size:15px;font-weight:600;line-height:1.3}
+.rrf .rk{font-weight:700;font-size:14px;padding:2px 10px;border-radius:99px;background:var(--fill);font-variant-numeric:tabular-nums;align-self:start}
+.rrf .rk.first{background:var(--blue);color:#fff}
+.rrf .ins{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--label2)}
+.rrf input{width:58px;font:inherit;font-size:16px;text-align:center;padding:6px;border-radius:9px;border:0;background:var(--fill);color:var(--label);font-variant-numeric:tabular-nums}
+.rrf .sc{margin-left:auto;font-family:var(--fm);font-size:13px;color:var(--label);letter-spacing:0}
+.lab label{display:flex;flex-direction:column;gap:4px;font-size:15px}
+.lab label .lv{display:flex;justify-content:space-between;color:var(--label2)}
+.lab label .lv b{color:var(--label);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--fill)}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--fill)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;margin-top:-12px;box-shadow:0 3px 8px rgba(0,0,0,.22),0 0 0 .5px rgba(0,0,0,.06)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border:0;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.22)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{border-radius:14px;background:var(--cell);padding:12px 14px;display:flex;flex-direction:column}
+.stat span{font-size:13px;color:var(--label2)}
+.stat b{font-family:var(--fd);font-size:28px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stat b.acc{color:var(--c,var(--blue))}
+.segc{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:2px;border-radius:10px;background:var(--fill);gap:2px}
+.segc button{border-radius:8px;padding:8px 4px;font-size:14px;font-weight:500;min-height:34px}
+.segc button[aria-pressed="true"]{background:var(--glass-strong);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 
-/* barre flottante */
-.dock{position:fixed;z-index:20;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));
-  bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-width:560px;margin:0 auto;
-  display:flex;align-items:center;gap:6px;padding:6px;border-radius:32px}
-.dock.glass{background:var(--glass-strong);-webkit-backdrop-filter:blur(40px) saturate(200%);backdrop-filter:blur(40px) saturate(200%)}
-.dock .ib{width:48px;height:48px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;flex:none}
-.dock .ib:active{background:var(--fill)}
-.dock .ib svg{width:22px;height:22px;stroke:var(--label);fill:none;stroke-width:2;stroke-linecap:round}
-.dock .cur{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2;padding:0 4px;cursor:pointer;border:0;background:transparent;text-align:left}
-.dock .cur b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dock .cur span{font-size:12px;color:var(--label2);font-variant-numeric:tabular-nums}
-.dock .bar{height:3px;border-radius:2px;background:var(--fill);margin-top:5px;overflow:hidden}
-.dock .bar i{display:block;height:100%;width:0;background:var(--blue);border-radius:2px;transition:width .2s}
-.timer{display:flex;align-items:center;gap:6px;height:48px;padding:0 16px 0 12px;border-radius:24px;border:0;cursor:pointer;flex:none;
-  background:var(--fill);font-family:var(--f-mono);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:0;color:var(--label)}
-.timer.on{background:var(--orange);color:#fff}
-.timer svg{width:14px;height:14px;fill:currentColor}
+/* fin de module */
+.card.end{align-items:center;text-align:center;justify-content:center}
+.medal{width:96px;height:96px;border-radius:28px;font-size:44px;animation:pop .5s cubic-bezier(.2,.9,.3,1.3)}
+.card.end h2{font-size:32px}
+.card.end .stats{width:100%;text-align:left}
 
-/* feuille sommaire */
-.scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.28);animation:fade .2s}
-@keyframes fade{from{opacity:0}}
-.sheet{position:fixed;z-index:41;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
-  max-width:560px;margin:0 auto;border-radius:34px;padding:8px 16px 16px;max-height:82vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px;
-  background:var(--glass-strong);animation:up .32s cubic-bezier(.2,.9,.25,1)}
-@keyframes up{from{transform:translateY(40px);opacity:0}}
-.grab{width:36px;height:5px;border-radius:3px;background:var(--label3);align-self:center;margin-top:4px}
-.sheet-head{display:flex;justify-content:space-between;align-items:center}
-.sheet-head b{font-size:22px;font-family:var(--f-display);letter-spacing:-.025em}
-.close{width:32px;height:32px;border-radius:50%;border:0;background:var(--fill);cursor:pointer;font-size:15px;color:var(--label2);font-weight:700}
-.toc a{display:flex;align-items:center;gap:12px;padding:11px 16px;min-height:54px;color:var(--label);position:relative}
-.toc a + a::before{content:"";position:absolute;top:0;left:58px;right:0;border-top:.5px solid var(--sep)}
-.toc .ic{width:30px;height:30px;border-radius:8px;font-size:14px}
-.toc .tx{flex:1;display:flex;flex-direction:column;line-height:1.25}
-.toc .tx span{font-size:13px;color:var(--label2)}
-.toc .ok{width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
-.toc .ok[hidden]{display:none}
-.sheet .reset{border:0;background:transparent;color:var(--red);font-size:17px;padding:12px;cursor:pointer;border-radius:14px}
+.lfoot{flex:none;display:flex;gap:10px;padding:10px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
+.cta{flex:1;min-height:56px;border-radius:18px;background:var(--c,var(--blue));color:#fff;font-size:17px;font-weight:600;transition:transform .12s ease,opacity .2s}
+.cta:active:not(:disabled){transform:scale(.97)}
+.cta:disabled{opacity:.35;cursor:default}
+.back{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;flex:none}
+.back svg{width:18px;height:18px;stroke:var(--label);stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.back:disabled{opacity:.3}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
 </head>
 <body>
 <div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
 
-<div class="page">
-<header class="hero">
-  <span class="overline">Parcours intensif · 60 min</span>
-  <h1>Agents LLM, de A à Z.</h1>
-  <p class="lede">Tool calling, MCP, évals, RAG, fine-tuning et assistants de code. Pour chaque sujet : l'idée clé, du code minimal, les pièges, puis un quiz.</p>
-  <div class="rings">
-    <div class="ring-card glass"><span class="v" id="hDone">0/6</span><span class="l">modules terminés</span></div>
-    <div class="ring-card glass"><span class="v" id="hQuiz">0</span><span class="l">bonnes réponses sur 22</span></div>
-    <div class="ring-card glass"><span class="v" id="hTime">60′</span><span class="l">restantes au chrono</span></div>
-  </div>
-  <div class="chip-row" aria-label="Accès rapide">
-    <a class="chip glass" href="#agents"><span class="ic" style="--c:var(--blue)">1</span>Agents · 14′</a>
-    <a class="chip glass" href="#mcp"><span class="ic" style="--c:var(--indigo)">2</span>MCP · 8′</a>
-    <a class="chip glass" href="#evals"><span class="ic" style="--c:var(--orange)">3</span>Évals · 10′</a>
-    <a class="chip glass" href="#rag"><span class="ic" style="--c:var(--green)">4</span>RAG · 12′</a>
-    <a class="chip glass" href="#openweight"><span class="ic" style="--c:var(--pink)">5</span>Open-weight · 10′</a>
-    <a class="chip glass" href="#code"><span class="ic" style="--c:var(--teal)">6</span>Code · 6′</a>
-  </div>
-</header>
+<div class="app">
+  <section class="view" id="home" aria-label="Accueil">
+    <div class="hello">
+      <small>Parcours · 60 min</small>
+      <h1>Agents LLM</h1>
+      <p>Une idée par écran. Balayez ou touchez Continuer.</p>
+    </div>
+    <button class="resume glass" id="resume" type="button">
+      <div class="ring"><svg viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="27"/><circle class="pr" id="ringPr" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"/></svg><b id="ringTxt">0%</b></div>
+      <div class="tx"><span id="resumeSub">Commencer</span><b id="resumeTitle">Agents &amp; tool calling</b></div>
+      <span class="go"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span>
+    </button>
+    <div class="sec">Modules</div>
+    <div class="mods glass" id="mods"></div>
+    <div class="foot"><button type="button" id="reset">Recommencer à zéro</button></div>
+  </section>
 
-<!-- ============ 1. AGENTS ============ -->
-<section class="mod" id="agents" data-mod="agents" data-title="Agents & tool calling" style="--c:var(--blue)">
-  <div class="mod-head">
-    <div class="top"><span class="ic">1</span><div class="meta"><b>Module 1 · 14 min</b><span>Tool calling · boucle · frameworks</span></div></div>
-    <h2>Un agent, c'est un LLM qui appelle des outils dans une boucle.</h2>
-  </div>
-  <p class="key glass">Le modèle n'exécute jamais rien. Il émet une <strong>demande d'appel</strong> structurée (nom de l'outil + arguments JSON). Votre code l'exécute, renvoie le résultat dans la conversation, et rappelle le modèle. On répète jusqu'à ce qu'il réponde sans demander d'outil.</p>
+  <section class="view" id="lesson" aria-label="Leçon" hidden>
+    <div class="lbar">
+      <button class="round glass" id="close" type="button" aria-label="Retour à l'accueil"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="segs" id="segs"></div>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="lfoot">
+      <button class="back glass" id="prev" type="button" aria-label="Carte précédente"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="cta" id="next" type="button">Continuer</button>
+    </div>
+  </section>
+</div>
 
-  <div class="prose">
-    <h3>Le tool calling en 4 temps</h3>
-    <ol>
-      <li><strong>Déclarer</strong> les outils : un nom, une description (c'est elle que le modèle lit pour décider), un JSON Schema des paramètres.</li>
-      <li><strong>Le modèle choisit</strong> : il répond avec un bloc <code>tool_use</code> (Anthropic) ou <code>tool_calls</code> (OpenAI) et s'arrête avec <code>stop_reason = "tool_use"</code>.</li>
-      <li><strong>Vous exécutez</strong> et renvoyez un <code>tool_result</code> lié à l'<code>id</code> de l'appel. En cas d'erreur, renvoyez le message d'erreur avec <code>is_error</code> : le modèle sait souvent corriger ses arguments.</li>
-      <li><strong>Le modèle reprend</strong> avec le résultat dans son contexte : nouvel appel, ou réponse finale.</li>
-    </ol>
-  </div>
-
-  <div class="lab glass">
-    <div class="lt"><span class="ic">▶</span>Déroulez une boucle agentique</div>
-    <div class="chat" id="simlog" aria-live="polite"></div>
-    <div class="btns"><button class="btn" id="simreset" type="button">Rejouer</button><button class="btn fill" id="simnext" type="button">Étape suivante</button></div>
-  </div>
-
-  <div class="code">
-    <span class="cap">La boucle « à la main » · SDK Anthropic (Python)</span>
-<pre><span class="k">import</span> anthropic, json
-client = anthropic.Anthropic()
-
-tools = [{
-    <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
-    <span class="s">"description"</span>: <span class="s">"Météo actuelle d'une ville."</span>,
-    <span class="s">"input_schema"</span>: {
-        <span class="s">"type"</span>: <span class="s">"object"</span>,
-        <span class="s">"properties"</span>: {<span class="s">"city"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}},
-        <span class="s">"required"</span>: [<span class="s">"city"</span>]},
-}]
-
-<span class="k">def</span> run_tool(name, args):
-    <span class="k">if</span> name == <span class="s">"get_weather"</span>:
-        <span class="k">return</span> {<span class="s">"temp_c"</span>: 14, <span class="s">"pluie_mm"</span>: 3}
-    <span class="k">raise</span> ValueError(name)
-
-messages = [{<span class="s">"role"</span>: <span class="s">"user"</span>,
-             <span class="s">"content"</span>: <span class="s">"Parapluie à Lyon ?"</span>}]
-
-<span class="k">for</span> step <span class="k">in</span> range(10):  <span class="c"># jamais de while True</span>
+<script>
+/* ================= CONTENU ================= */
+const M=[
+{id:"agents",t:"Agents & tool calling",c:"--blue",min:14,cards:[
+ {k:"idea",h:"Un agent, c'est…",big:"un LLM qui appelle des <em>outils</em>, dans une <em>boucle</em>.",sub:"Le modèle ne fait qu'écrire du texte. Pour agir, il écrit une demande d'appel d'outil. Votre code fait le reste."},
+ {k:"rows",h:"Le tool calling en 4 temps",num:true,rows:[
+   ["Déclarer","Nom, description et JSON Schema des paramètres. Le modèle choisit en lisant la description."],
+   ["Le modèle demande","Il renvoie un bloc tool_use et s'arrête avec stop_reason = \"tool_use\"."],
+   ["Votre code exécute","Puis renvoie un tool_result lié à l'id de l'appel. Les erreurs aussi."],
+   ["Le modèle reprend","Nouvel appel d'outil, ou réponse finale."]]},
+ {k:"sim",h:"Voyez la boucle tourner"},
+ {k:"quiz",q:"Qui exécute la fonction get_weather ?",o:["Le modèle, chez le fournisseur","Votre code","Le JSON Schema"],a:1,w:"Le modèle ne produit qu'une demande structurée. L'exécution se fait dans votre code (ou le framework), puis le résultat revient au modèle."},
+ {k:"code",h:"La boucle, en Python",lead:"Toute la mécanique tient en quelques lignes.",code:`for step in range(10):        # garde-fou
     resp = client.messages.create(
-        model=<span class="s">"claude-sonnet-5-5"</span>,
-        max_tokens=1024,
+        model=MODEL, max_tokens=1024,
         tools=tools, messages=messages)
-    messages.append({<span class="s">"role"</span>: <span class="s">"assistant"</span>,
-                     <span class="s">"content"</span>: resp.content})
-    <span class="k">if</span> resp.stop_reason != <span class="s">"tool_use"</span>:
-        <span class="k">break</span>                 <span class="c"># réponse finale</span>
-    results = []
-    <span class="k">for</span> block <span class="k">in</span> resp.content:
-        <span class="k">if</span> block.type == <span class="s">"tool_use"</span>:
-            <span class="k">try</span>:
-                out = json.dumps(run_tool(block.name, block.input))
-                err = False
-            <span class="k">except</span> Exception <span class="k">as</span> e:
-                out, err = str(e), True
-            results.append({
-                <span class="s">"type"</span>: <span class="s">"tool_result"</span>,
-                <span class="s">"tool_use_id"</span>: block.id,
-                <span class="s">"content"</span>: out, <span class="s">"is_error"</span>: err})
-    messages.append({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: results})
+    messages.append({"role": "assistant",
+                     "content": resp.content})
+    if resp.stop_reason != "tool_use":
+        break                 # réponse finale
+    results = [{"type": "tool_result",
+                "tool_use_id": b.id,
+                "content": run_tool(b.name, b.input)}
+               for b in resp.content
+               if b.type == "tool_use"]
+    messages.append({"role": "user",
+                     "content": results})`},
+ {k:"quiz",q:"Quand la boucle s'arrête-t-elle normalement ?",o:["Quand un outil renvoie une erreur","Quand le modèle répond sans demander d'outil","Après un seul appel d'outil"],a:1,w:"On boucle tant que le modèle demande des outils. Une erreur lui est renvoyée pour qu'il se corrige. On ajoute un plafond d'itérations par sécurité."},
+ {k:"idea",h:"Workflow ou agent ?",big:"<em>Workflow</em> : le chemin est écrit dans le code.<br><em>Agent</em> : le modèle choisit ses étapes.",sub:"Commencez par le plus simple qui marche. Un agent ne se justifie que quand le chemin ne peut pas être écrit d'avance."},
+ {k:"rows",h:"5 patterns à connaître",rows:[
+   ["Chaînage","Étapes en série, contrôles entre elles."],
+   ["Routage","Un classifieur envoie vers le bon prompt."],
+   ["Parallélisation","Sous-tâches en parallèle, ou vote."],
+   ["Orchestrateur","Un LLM découpe et délègue à des sous-agents."],
+   ["Évaluateur","Un LLM produit, un autre critique, on boucle."]]},
+ {k:"rows",h:"Les 4 frameworks",rows:[
+   ["LangGraph","Graphe d'états. Persistance, reprise, validation humaine."],
+   ["PydanticAI","Sorties typées et validées. Style FastAPI."],
+   ["OpenAI Agents SDK","Handoffs entre agents, guardrails, tracing."],
+   ["Claude Agent SDK","Le harnais de Claude Code : fichiers, bash, sous-agents, hooks."]]},
+ {k:"quiz",q:"6 étapes connues, reprise après crash, validation humaine à l'étape 4. Quel outil ?",o:["Un agent autonome","LangGraph avec checkpointer","Un serveur MCP"],a:1,w:"Chemin connu + persistance = workflow explicite. Le checkpointer permet la reprise, interrupt() la validation humaine."},
+ {k:"quiz",q:"Ce qui caractérise OpenAI Agents SDK :",o:["Les handoffs entre agents","Une base vectorielle intégrée","L'absence de tracing"],a:0,w:"Ses briques : Agent, handoffs, guardrails, sessions, avec un tracing intégré."},
+ {k:"warn",h:"Les pièges",rows:[
+   ["Trop d'outils","Au-delà de quelques dizaines, le choix se dégrade."],
+   ["Descriptions vagues","La description est un prompt : quand utiliser, quand ne pas utiliser."],
+   ["Pas de garde-fous","Limitez itérations et coût. Validation humaine si irréversible."],
+   ["Prompt injection","Un résultat d'outil est une donnée, jamais un ordre."]]}
+]},
+{id:"mcp",t:"MCP & Agent Skills",c:"--indigo",min:8,cards:[
+ {k:"idea",h:"Model Context Protocol",big:"L'<em>USB-C</em> des agents.",sub:"Protocole ouvert (Anthropic, 2024) pour brancher outils et données sur n'importe quelle app LLM. Un serveur écrit une fois marche partout."},
+ {k:"flow",h:"Qui parle à qui",flow:[["hl","Hôte","Claude Code, Cursor, votre app"],["a","1 client par serveur"],["duo",["Client 1","stdio"],["Client 2","Streamable HTTP"]],["a","JSON-RPC 2.0"],["duo",["Serveur GitHub","local"],["Serveur CRM","distant, OAuth"]]]},
+ {k:"rows",h:"Les 3 primitives serveur",rows:[
+   ["Tools","Des actions. C'est le modèle qui décide de les appeler."],
+   ["Resources","Des données en lecture. L'application décide."],
+   ["Prompts","Des gabarits. L'utilisateur choisit."]]},
+ {k:"quiz",q:"Quelle primitive MCP est déclenchée par le modèle ?",o:["Resources","Tools","Prompts"],a:1,w:"Tools : le modèle. Resources : l'application. Prompts : l'utilisateur."},
+ {k:"rows",h:"Transport et cycle de vie",rows:[
+   ["stdio","Serveur local, lancé en sous-processus."],
+   ["Streamable HTTP","Serveur distant, avec OAuth 2.1."],
+   ["Cycle","initialize → tools/list → tools/call"]]},
+ {k:"code",h:"Un serveur en 8 lignes",lead:"Avec FastMCP, la docstring devient la description de l'outil.",code:`from mcp.server.fastmcp import FastMCP
 
-print(resp.content[-1].text)</pre>
-  </div>
+mcp = FastMCP("meteo")
 
-  <div class="prose">
-    <h3>Workflow ou agent ?</h3>
-    <p>Un <strong>workflow</strong> suit un chemin écrit d'avance dans le code ; un <strong>agent</strong> décide lui-même de ses étapes. Commencez toujours par le plus simple qui marche. Les cinq patterns de <em>Building effective agents</em> (Anthropic, 2024) :</p>
-  </div>
-  <div class="list glass">
-    <div class="row"><span class="t">Prompt chaining</span><span class="s">Étapes en série, avec des contrôles entre elles.</span></div>
-    <div class="row"><span class="t">Routing</span><span class="s">Un classifieur envoie vers le bon prompt ou le bon modèle.</span></div>
-    <div class="row"><span class="t">Parallélisation</span><span class="s">Sections indépendantes en parallèle, ou vote sur plusieurs réponses.</span></div>
-    <div class="row"><span class="t">Orchestrator-workers</span><span class="s">Un LLM découpe la tâche et délègue à des sous-agents.</span></div>
-    <div class="row"><span class="t">Evaluator-optimizer</span><span class="s">Un LLM produit, un autre critique, on boucle.</span></div>
-  </div>
-  <p class="prose" style="font-size:15px;color:var(--label2)">Le pattern ReAct (raisonner, agir, observer, recommencer) est l'ancêtre de la boucle ci-dessus. Les modèles actuels le font nativement via le tool calling.</p>
+@mcp.tool()
+def get_weather(city: str) -> dict:
+    """Météo actuelle d'une ville."""
+    return {"city": city, "temp_c": 14}
 
-  <h3>Les quatre frameworks</h3>
-  <div class="list glass">
-    <details><summary><span class="ic" style="--c:#1C3C3C">LG</span><span class="tx"><b>LangGraph</b><span>Graphe d'états, persistance</span></span></summary>
-      <div class="body"><p><b>Modèle mental</b> : nœuds (fonctions), arêtes conditionnelles, état typé partagé.</p><p><b>Forces</b> : checkpointing et reprise, human-in-the-loop avec <code>interrupt</code>, contrôle fin du flux, multi-agents.</p><p><b>Quand</b> : workflows longs et explicites qui doivent survivre à un crash.</p></div></details>
-    <details><summary><span class="ic" style="--c:#E520E9">Py</span><span class="tx"><b>PydanticAI</b><span>Agents typés, sorties validées</span></span></summary>
-      <div class="body"><p><b>Modèle mental</b> : un agent « à la FastAPI », sorties validées par Pydantic, injection de dépendances.</p><p><b>Forces</b> : typage de bout en bout, multi-fournisseurs, tests faciles, traces OTel via Logfire.</p><p><b>Quand</b> : équipes Python qui veulent des sorties structurées fiables.</p></div></details>
-    <details><summary><span class="ic" style="--c:#10A37F">OA</span><span class="tx"><b>OpenAI Agents SDK</b><span>Handoffs et guardrails</span></span></summary>
-      <div class="body"><p><b>Modèle mental</b> : des agents qui se passent la main (<em>handoffs</em>), encadrés par des <em>guardrails</em>.</p><p><b>Forces</b> : API minimale, tracing intégré, sessions, fonctionne aussi avec d'autres modèles.</p><p><b>Quand</b> : multi-agents simples avec délégation, prototypes rapides.</p></div></details>
-    <details><summary><span class="ic" style="--c:#D97757">CA</span><span class="tx"><b>Claude Agent SDK</b><span>Le harnais de Claude Code</span></span></summary>
-      <div class="body"><p><b>Modèle mental</b> : Claude Code sous forme de bibliothèque, avec outils fichiers, bash et web intégrés.</p><p><b>Forces</b> : sous-agents, hooks, permissions, MCP, Skills, compaction du contexte.</p><p><b>Quand</b> : agents qui travaillent sur un système de fichiers ou du code.</p></div></details>
-  </div>
-
-  <div class="code">
-    <div class="seg" role="tablist" data-tabs="fw">
-      <button role="tab" aria-selected="true" data-tab="lg" type="button">LangGraph</button>
-      <button role="tab" aria-selected="false" data-tab="pa" type="button">Pydantic</button>
-      <button role="tab" aria-selected="false" data-tab="oa" type="button">OpenAI</button>
-      <button role="tab" aria-selected="false" data-tab="ca" type="button">Claude</button>
-    </div>
-<pre data-panel="fw" data-id="lg"><span class="k">from</span> langgraph.graph <span class="k">import</span> (StateGraph,
-    MessagesState, START)
-<span class="k">from</span> langgraph.prebuilt <span class="k">import</span> (ToolNode,
-    tools_condition)
-<span class="k">from</span> langgraph.checkpoint.memory <span class="k">import</span> InMemorySaver
-
-llm = model.bind_tools([get_weather])
-
-<span class="k">def</span> call_model(state: MessagesState):
-    <span class="k">return</span> {<span class="s">"messages"</span>: [llm.invoke(state[<span class="s">"messages"</span>])]}
-
-g = StateGraph(MessagesState)
-g.add_node(<span class="s">"model"</span>, call_model)
-g.add_node(<span class="s">"tools"</span>, ToolNode([get_weather]))
-g.add_edge(START, <span class="s">"model"</span>)
-g.add_conditional_edges(<span class="s">"model"</span>, tools_condition)
-g.add_edge(<span class="s">"tools"</span>, <span class="s">"model"</span>)   <span class="c"># la boucle</span>
-app = g.compile(checkpointer=InMemorySaver())</pre>
-<pre data-panel="fw" data-id="pa" hidden><span class="k">from</span> pydantic <span class="k">import</span> BaseModel
-<span class="k">from</span> pydantic_ai <span class="k">import</span> Agent
-
-<span class="k">class</span> Verdict(BaseModel):
-    parapluie: bool
-    raison: str
-
-agent = Agent(<span class="s">"anthropic:claude-sonnet-5-5"</span>,
-              output_type=Verdict)
-
-<span class="k">@agent.tool_plain</span>
-<span class="k">def</span> get_weather(city: str) -> dict:
-    <span class="s">"""Météo actuelle d'une ville."""</span>
-    <span class="k">return</span> {<span class="s">"temp_c"</span>: 14, <span class="s">"pluie_mm"</span>: 3}
-
-r = agent.run_sync(<span class="s">"Parapluie à Lyon ?"</span>)
-print(r.output.parapluie)  <span class="c"># objet validé</span></pre>
-<pre data-panel="fw" data-id="oa" hidden><span class="k">from</span> agents <span class="k">import</span> Agent, Runner, function_tool
-
-<span class="k">@function_tool</span>
-<span class="k">def</span> get_weather(city: str) -> str:
-    <span class="s">"""Météo actuelle d'une ville."""</span>
-    <span class="k">return</span> <span class="s">"14°C, 3 mm de pluie"</span>
-
-meteo = Agent(name=<span class="s">"Météo"</span>,
-              instructions=<span class="s">"Réponds sur la météo."</span>,
-              tools=[get_weather])
-triage = Agent(name=<span class="s">"Triage"</span>,
-               instructions=<span class="s">"Oriente vers le bon agent."</span>,
-               handoffs=[meteo])   <span class="c"># délégation</span>
-
-r = Runner.run_sync(triage, <span class="s">"Parapluie à Lyon ?"</span>)
-print(r.final_output)</pre>
-<pre data-panel="fw" data-id="ca" hidden><span class="k">import</span> asyncio
-<span class="k">from</span> claude_agent_sdk <span class="k">import</span> query, ClaudeAgentOptions
-
-<span class="k">async def</span> main():
-    opts = ClaudeAgentOptions(
-        allowed_tools=[<span class="s">"Read"</span>, <span class="s">"Grep"</span>, <span class="s">"Bash"</span>],
-        permission_mode=<span class="s">"acceptEdits"</span>,
-        mcp_servers={<span class="s">"meteo"</span>: {
-            <span class="s">"command"</span>: <span class="s">"python"</span>,
-            <span class="s">"args"</span>: [<span class="s">"server.py"</span>]}},
-    )
-    <span class="k">async for</span> msg <span class="k">in</span> query(
-            prompt=<span class="s">"Résume les TODO du repo"</span>,
-            options=opts):
-        print(msg)
-
-asyncio.run(main())</pre>
-  </div>
-
-  <div class="warn glass">
-    <div class="wt"><span class="ic">!</span>Pièges classiques</div>
-    <ul>
-      <li><strong>Trop d'outils</strong> : au-delà de quelques dizaines, le choix se dégrade. Regroupez, ou chargez les outils à la demande.</li>
-      <li><strong>Descriptions vagues</strong> : la description est un prompt. Dites quand utiliser l'outil, quand ne pas l'utiliser, et le format attendu.</li>
-      <li><strong>Pas de garde-fous</strong> : limitez itérations, tokens et coût. Confirmation humaine pour les actions irréversibles.</li>
-      <li><strong>Contexte qui gonfle</strong> : chaque résultat d'outil s'accumule. Tronquez, résumez, ou déléguez à un sous-agent dont seul le résumé revient.</li>
-      <li><strong>Prompt injection</strong> : ce que renvoie un outil (page web, mail) peut contenir des instructions. C'est une donnée, jamais un ordre.</li>
-    </ul>
-  </div>
-  <div class="quiz" data-quiz="agents"></div>
-</section>
-
-<!-- ============ 2. MCP ============ -->
-<section class="mod" id="mcp" data-mod="mcp" data-title="MCP & Agent Skills" style="--c:var(--indigo)">
-  <div class="mod-head">
-    <div class="top"><span class="ic">2</span><div class="meta"><b>Module 2 · 8 min</b><span>Model Context Protocol · Agent Skills</span></div></div>
-    <h2>MCP branche les outils. Les Skills apportent le savoir-faire.</h2>
-  </div>
-  <p class="key glass">MCP est un protocole ouvert (Anthropic, nov. 2024, adopté depuis par OpenAI, Google, Microsoft…) qui standardise la connexion entre une application LLM et des outils ou des données. On écrit un serveur une fois, tous les clients compatibles peuvent l'utiliser : c'est l'« USB-C des agents ».</p>
-
-  <div class="flow glass" role="img" aria-label="Architecture MCP">
-    <div class="lane">Hôte · Claude Code, Cursor, votre app</div>
-    <div class="node"><span class="ic" style="--c:var(--indigo)">AI</span><span class="tx"><b>LLM</b><span>décide quel outil appeler</span></span></div>
-    <div class="link">un client MCP par serveur</div>
-    <div class="pair">
-      <div class="node"><span class="tx"><b>Client 1</b><span>stdio</span></span></div>
-      <div class="node"><span class="tx"><b>Client 2</b><span>Streamable HTTP</span></span></div>
-    </div>
-    <div class="link">JSON-RPC 2.0</div>
-    <div class="pair">
-      <div class="node"><span class="tx"><b>Serveur « github »</b><span>local, sous-processus</span></span></div>
-      <div class="node"><span class="tx"><b>Serveur « crm »</b><span>distant, OAuth 2.1</span></span></div>
-    </div>
-  </div>
-
-  <h3>À savoir réciter</h3>
-  <div class="list glass">
-    <div class="row"><span class="t">Rôles</span><span class="s">L'<b>hôte</b> est l'application ; il crée un <b>client</b> par <b>serveur</b>.</span></div>
-    <div class="row"><span class="t">Côté serveur</span><span class="s"><b>Tools</b> : actions, choisies par le modèle. <b>Resources</b> : données en lecture, choisies par l'application. <b>Prompts</b> : gabarits, choisis par l'utilisateur.</span></div>
-    <div class="row"><span class="t">Côté client</span><span class="s"><b>Sampling</b> : le serveur demande une complétion au LLM de l'hôte. <b>Roots</b> : périmètre de fichiers. <b>Elicitation</b> : le serveur demande une info à l'utilisateur.</span></div>
-    <div class="row"><span class="t">Transport</span><span class="s">JSON-RPC 2.0 via <b>stdio</b> (local) ou <b>Streamable HTTP</b> (distant, a remplacé HTTP+SSE en 2025).</span></div>
-    <div class="row"><span class="t">Cycle de vie</span><span class="s"><code>initialize</code> (négociation des capacités) → <code>tools/list</code> → <code>tools/call</code>.</span></div>
-  </div>
-
-  <div class="code">
-    <span class="cap">Un serveur MCP en 12 lignes · FastMCP</span>
-<pre><span class="k">from</span> mcp.server.fastmcp <span class="k">import</span> FastMCP
-
-mcp = FastMCP(<span class="s">"meteo"</span>)
-
-<span class="k">@mcp.tool()</span>
-<span class="k">def</span> get_weather(city: str) -> dict:
-    <span class="s">"""Météo actuelle d'une ville."""</span>
-    <span class="k">return</span> {<span class="s">"city"</span>: city, <span class="s">"temp_c"</span>: 14}
-
-<span class="k">@mcp.resource</span>(<span class="s">"meteo://stations"</span>)
-<span class="k">def</span> stations() -> str:
-    <span class="k">return</span> <span class="s">"LYS, CDG, MRS"</span>
-
-<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
-    mcp.run()          <span class="c"># stdio par défaut</span>
-
-<span class="c"># Dans Claude Code :</span>
-<span class="c"># claude mcp add meteo -- python server.py</span></pre>
-  </div>
-
-  <div class="prose">
-    <h3>Agent Skills</h3>
-    <p>Une Skill est un <strong>dossier</strong> avec un <code>SKILL.md</code> (frontmatter YAML <code>name</code> + <code>description</code>, puis des instructions), et éventuellement des scripts, gabarits ou docs. Né chez Anthropic, le format est devenu un standard ouvert fin 2025, lu aussi par Codex, Cursor, Copilot…</p>
-    <p>Le principe clé : la <strong>divulgation progressive</strong>. Au démarrage, l'agent ne voit que nom et description, quelques dizaines de tokens par Skill. Il charge le corps quand la tâche s'y prête, puis les fichiers annexes seulement si besoin. On peut donc en installer des centaines sans saturer le contexte.</p>
-  </div>
-  <div class="code">
-    <span class="cap">release-notes/SKILL.md</span>
-<pre><span class="k">---</span>
-<span class="k">name:</span> release-notes
-<span class="k">description:</span> <span class="s">Rédige les notes de version
+mcp.run()   # stdio par défaut`},
+ {k:"quiz",q:"Serveur MCP distant partagé par une équipe : quel transport ?",o:["stdio","Streamable HTTP + OAuth","WebRTC"],a:1,w:"stdio est pour le local. Le distant passe par Streamable HTTP avec autorisation OAuth 2.1."},
+ {k:"idea",h:"Agent Skills",big:"Un <em>dossier</em> avec un SKILL.md.",sub:"Des instructions, scripts et gabarits que l'agent charge quand la tâche s'y prête. Standard ouvert depuis fin 2025."},
+ {k:"code",h:"Anatomie d'une Skill",lead:"Seuls name et description sont lus au démarrage.",code:`---
+name: release-notes
+description: Rédige les notes de version
   à partir des commits. À utiliser quand
-  on demande un changelog.</span>
-<span class="k">---</span>
+  on demande un changelog.
+---
 # Notes de version
-1. Lancer scripts/collect_commits.sh &lt;tag&gt;
-2. Grouper : feat, fix, perf. Ignorer chore.
-3. Remplir templates/notes.md</pre>
-  </div>
-
-  <h3>MCP ou Skill ?</h3>
-  <div class="list glass">
-    <div class="row"><span class="t">Question</span><span class="s"><b>MCP</b> : à quoi l'agent peut-il accéder ?<br><b>Skill</b> : comment doit-il faire ce travail ?</span></div>
-    <div class="row"><span class="t">Forme</span><span class="s"><b>MCP</b> : un processus serveur JSON-RPC.<br><b>Skill</b> : un dossier de Markdown et de scripts.</span></div>
-    <div class="row"><span class="t">Coût en contexte</span><span class="s"><b>MCP</b> : schémas de tous les outils chargés (sauf chargement différé).<br><b>Skill</b> : quelques tokens, le reste à la demande.</span></div>
-    <div class="row"><span class="t">Exemple</span><span class="s"><b>MCP</b> : lire Jira, requêter Postgres.<br><b>Skill</b> : appliquer la charte d'équipe à un rapport.</span></div>
-  </div>
-  <p style="font-size:15px;color:var(--label2)">Les deux se combinent : une Skill peut expliquer comment bien utiliser les outils d'un serveur MCP.</p>
-
-  <div class="warn glass">
-    <div class="wt"><span class="ic">!</span>Sécurité : on vous posera la question</div>
-    <ul>
-      <li><strong>Tool poisoning</strong> : une description d'outil malveillante cache des instructions. N'installez que des serveurs de confiance.</li>
-      <li><strong>Trifecta létale</strong> : données privées + contenu non fiable + capacité à communiquer vers l'extérieur = exfiltration possible. Coupez au moins un des trois.</li>
-      <li><strong>Moindre privilège</strong> : tokens à portée réduite, lecture seule par défaut, confirmation humaine pour les écritures.</li>
-    </ul>
-  </div>
-  <div class="quiz" data-quiz="mcp"></div>
-</section>
-
-<!-- ============ 3. EVALS ============ -->
-<section class="mod" id="evals" data-mod="evals" data-title="Évaluation & traces" style="--c:var(--orange)">
-  <div class="mod-head">
-    <div class="top"><span class="ic">3</span><div class="meta"><b>Module 3 · 10 min</b><span>Jeux de tests · LLM-as-a-judge · traces</span></div></div>
-    <h2>Sans évaluation, chaque changement de prompt est un pari.</h2>
-  </div>
-  <p class="key glass">La démarche qui marche : <strong>regarder les traces</strong>, nommer les modes d'échec, transformer chaque échec en cas de test, puis mesurer à chaque modification. On ne commence pas par une métrique générique : on commence par lire 50 conversations.</p>
-
-  <h3>La boucle d'amélioration</h3>
-  <div class="flow glass">
-    <div class="node"><span class="ic" style="--c:var(--orange)">1</span><span class="tx"><b>Instrumenter</b><span>chaque appel LLM, outil, retrieval → un span</span></span></div>
-    <div class="link"></div>
-    <div class="node"><span class="ic" style="--c:var(--orange)">2</span><span class="tx"><b>Analyser les erreurs</b><span>annoter des traces, regrouper les échecs par catégorie</span></span></div>
-    <div class="link"></div>
-    <div class="node"><span class="ic" style="--c:var(--orange)">3</span><span class="tx"><b>Construire le jeu de test</b><span>cas réels + cas limites, versionné comme du code</span></span></div>
-    <div class="link"></div>
-    <div class="node"><span class="ic" style="--c:var(--orange)">4</span><span class="tx"><b>Évaluer</b><span>déterministe d'abord (JSON, regex, outil appelé), juge LLM pour le subjectif</span></span></div>
-    <div class="link"></div>
-    <div class="node"><span class="ic" style="--c:var(--orange)">5</span><span class="tx"><b>CI et prod</b><span>hors ligne avant de déployer, en ligne sur un échantillon</span></span></div>
-  </div>
-
-  <h3>Quoi évaluer</h3>
-  <div class="list glass">
-    <div class="row"><span class="t">Résultat final</span><span class="s">Référence, juge LLM ou test exécutable. <b>Ex.</b> le ticket créé a le bon statut.</span></div>
-    <div class="row"><span class="t">Trajectoire d'agent</span><span class="s">Appels d'outils lus dans la trace. <b>Ex.</b> <code>search</code> avant <code>refund</code>, moins de 8 étapes.</span></div>
-    <div class="row"><span class="t">Retrieval (RAG)</span><span class="s">Recall@k, MRR, nDCG. <b>Ex.</b> le bon passage est dans le top 5.</span></div>
-    <div class="row"><span class="t">Génération (RAG)</span><span class="s">Fidélité au contexte, pertinence (style RAGAS). <b>Ex.</b> chaque affirmation a une source.</span></div>
-    <div class="row"><span class="t">Opérationnel</span><span class="s">Latence p95, coût par tâche, taux d'erreur d'outil.</span></div>
-  </div>
-
-  <h3>LLM-as-a-judge, bien fait</h3>
-  <div class="list glass">
-    <div class="row"><span class="t">Critère binaire</span><span class="s">« Cite-t-elle une source du contexte ? Oui/Non » plutôt qu'une note sur 10. Un juge par critère.</span></div>
-    <div class="row"><span class="t">Raisonner, puis trancher</span><span class="s">Justification courte d'abord, verdict en JSON ensuite.</span></div>
-    <div class="row"><span class="t">Calibrer contre l'humain</span><span class="s">Une centaine de cas annotés ; mesurer vrais positifs et vrais négatifs, pas seulement l'accuracy.</span></div>
-    <div class="row"><span class="t">Biais connus</span><span class="s"><b>Position</b> (préfère la 1re réponse : inversez l'ordre), <b>verbosité</b> (préfère le plus long), <b>auto-préférence</b> (favorise ses propres sorties).</span></div>
-    <div class="row"><span class="t">Pointwise ou pairwise</span><span class="s">A/B plus stable pour choisir entre deux versions ; pointwise pour le monitoring.</span></div>
-  </div>
-
-  <div class="code">
-    <span class="cap">Prompt de juge binaire</span>
-<pre><span class="s">Tu évalues la réponse d'un assistant.
-
-Critère : la réponse n'affirme RIEN
+1. Lancer scripts/collect.sh <tag>
+2. Grouper : feat, fix, perf
+3. Remplir templates/notes.md`},
+ {k:"quiz",q:"Pourquoi installer 200 Skills ne sature pas le contexte ?",o:["Elles sont compressées","Seuls nom et description sont chargés au départ","Elles tournent dans un autre modèle"],a:1,w:"Divulgation progressive : métadonnées d'abord, le corps quand c'est utile, les fichiers annexes seulement si besoin."},
+ {k:"idea",h:"MCP ou Skill ?",big:"MCP donne l'<em>accès</em>.<br>Une Skill donne le <em>savoir-faire</em>.",sub:"MCP : lire Jira, requêter Postgres. Skill : appliquer la charte d'équipe à un rapport. Les deux se combinent."},
+ {k:"warn",h:"Sécurité",rows:[
+   ["Tool poisoning","Une description d'outil peut cacher des instructions malveillantes."],
+   ["Trifecta létale","Données privées + contenu non fiable + sortie vers l'extérieur = fuite possible."],
+   ["Moindre privilège","Lecture seule par défaut, validation humaine pour écrire."]]}
+]},
+{id:"evals",t:"Évaluation & traces",c:"--orange",min:10,cards:[
+ {k:"idea",h:"La règle d'or",big:"Lisez <em>50 traces</em> avant de choisir une métrique.",sub:"Sans évaluation, chaque changement de prompt est un pari."},
+ {k:"rows",h:"La boucle d'amélioration",num:true,rows:[
+   ["Instrumenter","Chaque appel LLM, outil, recherche devient un span."],
+   ["Analyser","Annoter des traces, regrouper les échecs."],
+   ["Tester","Chaque échec devient un cas de test versionné."],
+   ["Mesurer","Déterministe d'abord, juge LLM pour le subjectif."],
+   ["Surveiller","En CI avant déploiement, en ligne sur un échantillon."]]},
+ {k:"quiz",q:"Par quoi commencer pour évaluer un agent ?",o:["Une métrique générique","Lire des traces réelles","Une note sur 10 par un LLM"],a:1,w:"L'analyse d'erreurs sur de vraies traces dit quoi mesurer. Les métriques génériques ratent vos problèmes spécifiques."},
+ {k:"rows",h:"Quoi évaluer",rows:[
+   ["Résultat","Le ticket créé a le bon statut."],
+   ["Trajectoire","Le bon outil, dans le bon ordre, en peu d'étapes."],
+   ["Retrieval","Le bon passage est dans le top 5 (recall@k)."],
+   ["Fidélité","Chaque affirmation a une source."],
+   ["Opérationnel","Latence, coût, taux d'erreur."]]},
+ {k:"rows",h:"Un bon juge LLM",rows:[
+   ["Binaire","Oui/Non sur un critère précis, pas une note sur 10."],
+   ["Raisonne d'abord","Justification courte, puis verdict en JSON."],
+   ["Calibré","Comparé à ~100 annotations humaines."]]},
+ {k:"code",h:"Prompt de juge",lead:"Un critère, un verdict.",code:`Critère : la réponse n'affirme RIEN
 qui ne soit dans le CONTEXTE.
 
-&lt;contexte&gt;{context}&lt;/contexte&gt;
-&lt;reponse&gt;{answer}&lt;/reponse&gt;
+<contexte>{context}</contexte>
+<reponse>{answer}</reponse>
 
 Liste les affirmations non soutenues,
 puis réponds en JSON :
 {"raisonnement": "...",
- "verdict": "PASS" | "FAIL"}</span></pre>
-  </div>
-  <div class="code">
-    <span class="cap">Tracer avec Langfuse</span>
-<pre><span class="k">from</span> langfuse <span class="k">import</span> observe, get_client
-
-<span class="k">@observe()</span>            <span class="c"># 1 span</span>
-<span class="k">def</span> retrieve(q): ...
-
-<span class="k">@observe()</span>            <span class="c"># span parent</span>
-<span class="k">def</span> answer(q):
-    docs = retrieve(q)
-    <span class="k">return</span> llm(q, docs)
-
-answer(<span class="s">"Délai de remboursement ?"</span>)
-lf = get_client()
-lf.score_current_trace(name=<span class="s">"faithful"</span>, value=1)
-lf.flush()</pre>
-  </div>
-
-  <div class="prose">
-    <h3>Traces et OpenTelemetry</h3>
-    <p>Une <strong>trace</strong> = une requête de bout en bout. Elle contient des <strong>spans</strong> imbriqués (appel LLM, outil, retrieval) avec entrées, sorties, durée, tokens et coût. <strong>OpenTelemetry</strong> est le standard ouvert pour les produire ; ses <em>conventions GenAI</em> nomment les attributs (<code>gen_ai.request.model</code>, <code>gen_ai.usage.input_tokens</code>…). Instrumenter en OTel évite de dépendre d'un fournisseur.</p>
-    <p><strong>Langfuse</strong> (open source, auto-hébergeable) reçoit ces traces et ajoute prompts versionnés, datasets, scores et évaluateurs LLM-as-a-judge. Alternatives : LangSmith, Arize Phoenix, Braintrust, Logfire.</p>
-  </div>
-  <div class="warn glass">
-    <div class="wt"><span class="ic">!</span>Regard critique</div>
-    <ul>
-      <li>Un score moyen qui monte peut cacher une régression sur une catégorie : découpez par type de cas.</li>
-      <li>Les LLM ne sont pas déterministes : plusieurs essais, regardez la variance (pass@k, pass^k).</li>
-      <li>Un juge non calibré mesure surtout ses propres goûts.</li>
-    </ul>
-  </div>
-  <div class="quiz" data-quiz="evals"></div>
-</section>
-
-<!-- ============ 4. RAG ============ -->
-<section class="mod" id="rag" data-mod="rag" data-title="RAG" style="--c:var(--green)">
-  <div class="mod-head">
-    <div class="top"><span class="ic">4</span><div class="meta"><b>Module 4 · 12 min</b><span>Embeddings · hybride · reranking · bases vectorielles</span></div></div>
-    <h2>RAG : retrouver les bons passages, puis répondre avec.</h2>
-  </div>
-  <p class="key glass">La qualité d'un RAG se joue presque toujours au <strong>retrieval</strong>. Si le bon passage n'est pas dans le contexte, aucun modèle ne peut répondre juste. Mesurez le retrieval séparément de la génération.</p>
-
-  <div class="flow glass" role="img" aria-label="Pipeline RAG">
-    <div class="lane">Hors ligne · indexation</div>
-    <div class="node"><span class="ic" style="--c:var(--green)">1</span><span class="tx"><b>Documents → chunks</b><span>passages de quelques centaines de tokens</span></span></div>
-    <div class="link"></div>
-    <div class="node"><span class="ic" style="--c:var(--green)">2</span><span class="tx"><b>Embeddings + index</b><span>HNSW pour le dense, BM25 pour le lexical</span></span></div>
-    <div class="lane">En ligne · requête</div>
-    <div class="pair">
-      <div class="node"><span class="tx"><b>Dense</b><span>top 50 par sens</span></span></div>
-      <div class="node"><span class="tx"><b>BM25</b><span>top 50 par mots</span></span></div>
-    </div>
-    <div class="link">fusion RRF</div>
-    <div class="node"><span class="ic" style="--c:var(--green)">3</span><span class="tx"><b>Reranking</b><span>cross-encoder → top 5</span></span></div>
-    <div class="link"></div>
-    <div class="node"><span class="ic" style="--c:var(--green)">4</span><span class="tx"><b>LLM + citations</b><span>répond à partir des passages</span></span></div>
-  </div>
-
-  <h3>Les briques</h3>
-  <div class="list glass">
-    <details><summary><span class="ic" style="--c:var(--green)">E</span><span class="tx"><b>Embeddings</b><span>texte → vecteur</span></span></summary>
-      <div class="body"><p>Un modèle transforme un texte en vecteur (souvent 384 à 3072 dimensions). Deux textes de sens proche donnent des vecteurs proches, mesurés par <b>similarité cosinus</b>. Même modèle pour documents et requêtes.</p><p>Exemples : OpenAI <code>text-embedding-3</code>, Voyage, Cohere ; en open-weight BGE-M3, Qwen3-Embedding. Comparez sur MTEB, puis sur vos données.</p></div></details>
-    <details><summary><span class="ic" style="--c:var(--green)">C</span><span class="tx"><b>Chunking</b><span>découper sans perdre le sens</span></span></summary>
-      <div class="body"><p>Quelques centaines de tokens, avec chevauchement, en respectant la structure (titres, paragraphes).</p><p>Le <b>contextual retrieval</b> ajoute à chaque chunk une phrase de contexte générée par un LLM (« Extrait du rapport Q2 d'ACME, section marges ») avant de l'indexer.</p></div></details>
-    <details><summary><span class="ic" style="--c:var(--green)">H</span><span class="tx"><b>Recherche hybride</b><span>sens + mots exacts</span></span></summary>
-      <div class="body"><p>Le dense capte le sens et les paraphrases. <b>BM25</b> (lexical) capte les termes exacts : codes produit, noms propres, numéros d'erreur. On combine les deux classements.</p></div></details>
-    <details><summary><span class="ic" style="--c:var(--green)">R</span><span class="tx"><b>Fusion RRF</b><span>Reciprocal Rank Fusion</span></span></summary>
-      <div class="body"><p><code>score(d) = Σ 1 / (k + rang(d))</code> avec k = 60. N'utilise que les rangs : pas besoin de normaliser des scores incomparables. Essayez l'atelier ci-dessous.</p></div></details>
-    <details><summary><span class="ic" style="--c:var(--green)">X</span><span class="tx"><b>Reranking</b><span>cross-encoder sur le top 50</span></span></summary>
-      <div class="body"><p>Un <b>cross-encoder</b> lit la question et le passage ensemble et donne un score de pertinence. Plus précis qu'un <b>bi-encoder</b> (embeddings calculés séparément), mais trop lent pour tout le corpus. Exemples : Cohere Rerank, bge-reranker, ou un LLM.</p></div></details>
-  </div>
-
-  <div class="lab glass">
-    <div class="lt"><span class="ic">∑</span>Atelier · la fusion RRF</div>
-    <p class="hint">Deux moteurs classent les mêmes documents (1 = meilleur, vide = absent). « Erreur E-4012 » est 1er en BM25 grâce au code exact, mais 9e en dense. Modifiez les rangs.</p>
-    <div class="rrf" id="rrf"></div>
-    <label><span class="lv">Constante k <b id="kval">60</b></span><input type="range" id="kslider" min="1" max="100" value="60"></label>
-    <p class="hint">Un k petit donne beaucoup de poids aux premiers rangs ; un k grand lisse les écarts.</p>
-  </div>
-
-  <div class="prose">
-    <h3>Bases vectorielles</h3>
-    <p>Comparer la requête à des millions de vecteurs un par un est trop lent : on utilise un index ANN (<em>approximate nearest neighbors</em>). <strong>HNSW</strong> est un graphe navigable à plusieurs niveaux, rapide et précis mais gourmand en mémoire. <strong>IVF</strong> regroupe les vecteurs en clusters et ne fouille que les plus proches. La <strong>quantization</strong> réduit la mémoire au prix d'un peu de précision.</p>
-  </div>
-  <div class="list glass">
-    <div class="row"><span class="t">pgvector</span><span class="s">Extension Postgres. Vecteurs à côté des données métier : transactions, jointures, filtres SQL. Index HNSW ou IVFFlat. Hybride via <code>tsvector</code> + RRF en SQL. <b>Le choix par défaut si vous avez déjà Postgres.</b></span></div>
-    <div class="row"><span class="t">Qdrant</span><span class="s">Base dédiée en Rust. Filtres sur payload rapides, vecteurs denses + sparses (hybride natif), quantization, multi-vecteurs. <b>Pour gros volumes ou filtrage intensif.</b></span></div>
-    <div class="row"><span class="t">Autres</span><span class="s">Weaviate, Milvus, Pinecone (managé), Chroma (prototypage), Elasticsearch/OpenSearch. Le choix dépend du volume, du filtrage et de l'exploitation, rarement de la vitesse brute.</span></div>
-  </div>
-  <div class="code">
-    <span class="cap">pgvector · stocker et chercher</span>
-<pre><span class="k">CREATE EXTENSION</span> vector;
-<span class="k">CREATE TABLE</span> chunks (
-  id bigserial <span class="k">PRIMARY KEY</span>,
-  doc_id int, content text,
+ "verdict": "PASS" | "FAIL"}`},
+ {k:"rows",h:"Les biais du juge",rows:[
+   ["Position","Préfère la première réponse. Inversez l'ordre."],
+   ["Verbosité","Préfère la plus longue."],
+   ["Auto-préférence","Favorise ses propres sorties."]]},
+ {k:"quiz",q:"Votre juge préfère A dans 70 % des cas, quel que soit le contenu. Pourquoi ?",o:["Biais de position","Surapprentissage","Fuite de données"],a:0,w:"Remède : évaluer chaque paire dans les deux ordres et ne garder que les verdicts cohérents."},
+ {k:"flow",h:"Trace et spans",flow:[["hl","Trace","une requête utilisateur, de bout en bout"],["a","contient"],["n","Span · retrieval","entrées, sorties, durée"],["a",""],["n","Span · appel LLM","tokens, coût, modèle"],["a",""],["n","Span · appel d'outil","arguments, résultat"]]},
+ {k:"idea",h:"OpenTelemetry & Langfuse",big:"<em>OTel</em> produit les traces.<br><em>Langfuse</em> les exploite.",sub:"OTel est le standard ouvert (attributs gen_ai.*). Langfuse, open source, ajoute datasets, scores, prompts versionnés et juges LLM. Alternatives : LangSmith, Phoenix, Braintrust."},
+ {k:"quiz",q:"Comment savoir si votre juge est fiable ?",o:["Prendre le plus gros modèle","Le comparer à des annotations humaines","Vérifier qu'il répond en JSON"],a:1,w:"On mesure son accord avec l'humain (vrais positifs et vrais négatifs), puis on ajuste son prompt."},
+ {k:"warn",h:"Regard critique",rows:[
+   ["Moyennes trompeuses","Un score global qui monte peut cacher une régression."],
+   ["Non-déterminisme","Plusieurs essais par cas, regardez la variance."],
+   ["Juge non calibré","Il mesure surtout ses propres goûts."]]}
+]},
+{id:"rag",t:"RAG",c:"--green",min:12,cards:[
+ {k:"idea",h:"Retrieval-Augmented Generation",big:"Si le bon passage n'est pas <em>retrouvé</em>, aucun modèle ne répondra juste.",sub:"Mesurez la recherche séparément de la génération."},
+ {k:"flow",h:"Le pipeline",flow:[["n","Documents → chunks","quelques centaines de tokens"],["a","indexation"],["n","Embeddings + index","HNSW et BM25"],["a","à la question"],["duo",["Dense","par le sens"],["BM25","par les mots"]],["a","fusion RRF"],["hl","Reranking → top 5","cross-encoder"],["a",""],["n","LLM + citations","répond depuis les passages"]]},
+ {k:"idea",h:"Embeddings",big:"Un texte devient un <em>vecteur</em>. Sens proche, vecteurs proches.",sub:"Mesure : similarité cosinus. Même modèle pour les documents et les questions. Ex. text-embedding-3, BGE-M3, Qwen3-Embedding."},
+ {k:"idea",h:"Recherche hybride",big:"<em>Dense</em> trouve le sens.<br><em>BM25</em> trouve les mots exacts.",sub:"Codes produit, noms propres, numéros d'erreur : le dense les rate souvent. On combine les deux classements."},
+ {k:"rrf",h:"Fusion RRF",lead:"score = Σ 1 / (k + rang), avec k = 60. Changez les rangs."},
+ {k:"quiz",q:"On cherche « erreur E-4012 », le dense ne trouve pas. La solution ?",o:["Un plus gros modèle d'embedding","Ajouter BM25 (hybride)","Des chunks plus longs"],a:1,w:"Les termes exacts sont le point fort de la recherche lexicale."},
+ {k:"quiz",q:"RRF, k = 60 : 1er en dense, absent de BM25. Score ?",o:["1/61 ≈ 0,0164","1/60","0"],a:0,w:"On additionne 1/(k + rang) seulement sur les listes où il apparaît : 1/(60+1)."},
+ {k:"idea",h:"Reranking",big:"Un <em>cross-encoder</em> lit question et passage ensemble.",sub:"Bien plus précis que les embeddings, mais trop lent pour tout le corpus. On l'applique au top 50 pour garder 5 passages. Ex. Cohere Rerank, bge-reranker."},
+ {k:"quiz",q:"Pourquoi ne pas reranker tout le corpus ?",o:["Moins précis","Trop coûteux : il lit chaque paire","Anglais uniquement"],a:1,w:"Il ne peut rien précalculer : chaque paire question-document doit être lue."},
+ {k:"idea",h:"Index vectoriel",big:"<em>HNSW</em> : un graphe pour trouver les voisins sans tout comparer.",sub:"Rapide et précis, gourmand en mémoire. IVF regroupe en clusters. La quantization réduit la mémoire."},
+ {k:"rows",h:"Quelle base ?",rows:[
+   ["pgvector","Extension Postgres. Vecteurs à côté des données, filtres SQL. Le choix par défaut."],
+   ["Qdrant","Base dédiée en Rust. Hybride natif, filtres rapides, grands volumes."],
+   ["Autres","Weaviate, Milvus, Pinecone, Chroma, OpenSearch."]]},
+ {k:"code",h:"pgvector",lead:"<=> est la distance cosinus.",code:`CREATE EXTENSION vector;
+CREATE TABLE chunks (
+  id bigserial PRIMARY KEY,
+  content text,
   embedding vector(1024));
-<span class="k">CREATE INDEX ON</span> chunks
-  <span class="k">USING</span> hnsw (embedding vector_cosine_ops);
+CREATE INDEX ON chunks
+  USING hnsw (embedding vector_cosine_ops);
 
-<span class="k">SELECT</span> id, content,
-       1 - (embedding &lt;=&gt; $1) <span class="k">AS</span> similarite
-<span class="k">FROM</span> chunks
-<span class="k">WHERE</span> doc_id = <span class="k">ANY</span>($2)      <span class="c">-- filtre métier</span>
-<span class="k">ORDER BY</span> embedding &lt;=&gt; $1 <span class="k">LIMIT</span> 50;
-
-<span class="c">-- &lt;=&gt; cosinus · &lt;-&gt; L2 · &lt;#&gt; produit scalaire négatif</span></pre>
-  </div>
-
-  <div class="warn glass">
-    <div class="wt"><span class="ic">!</span>Pièges classiques</div>
-    <ul>
-      <li>Chunks trop petits : sens perdu. Trop gros : signal dilué. Testez plusieurs tailles avec votre recall@k.</li>
-      <li>Changer de modèle d'embedding impose de tout réindexer.</li>
-      <li>Filtrer après la recherche ANN peut ne rien laisser : filtrez pendant la recherche.</li>
-      <li>Les questions multi-étapes (« compare X et Y ») demandent plusieurs recherches : donnez au modèle un outil de recherche et laissez-le itérer. C'est le RAG agentique.</li>
-    </ul>
-  </div>
-  <div class="quiz" data-quiz="rag"></div>
-</section>
-
-<!-- ============ 5. OPEN-WEIGHT ============ -->
-<section class="mod" id="openweight" data-mod="openweight" data-title="Open-weight" style="--c:var(--pink)">
-  <div class="mod-head">
-    <div class="top"><span class="ic">5</span><div class="meta"><b>Module 5 · 10 min</b><span>LoRA · TRL · Unsloth · vLLM</span></div></div>
-    <h2>Modèles open-weight : adapter, puis servir.</h2>
-  </div>
-  <p class="key glass">« Open-weight » veut dire que les poids sont téléchargeables, pas forcément les données ni le code d'entraînement, et la licence n'autorise pas toujours tout. Familles courantes : Llama, Qwen, Mistral, Gemma, DeepSeek, gpt-oss.</p>
-
-  <div class="prose">
-    <h3>Faut-il fine-tuner ?</h3>
-    <p>Dans l'ordre : prompt, puis exemples few-shot, puis RAG, et seulement ensuite fine-tuning. Le fine-tuning change un <strong>comportement</strong> : format de sortie, style, tâche étroite répétée, ou rendre un petit modèle aussi bon qu'un gros sur votre tâche. Il est mauvais pour <strong>ajouter des connaissances</strong> : pour ça, utilisez le RAG.</p>
-  </div>
-  <div class="list glass">
-    <div class="row"><span class="t">SFT</span><span class="s">Supervised fine-tuning : paires instruction → réponse idéale.</span></div>
-    <div class="row"><span class="t">DPO</span><span class="s">Paires réponse préférée / rejetée, sans modèle de récompense séparé.</span></div>
-    <div class="row"><span class="t">RL vérifiable (GRPO…)</span><span class="s">La récompense vient d'un test qui passe, d'un calcul juste, d'un format valide.</span></div>
-  </div>
-
-  <div class="prose">
-    <h3>LoRA et QLoRA</h3>
-    <p>Au lieu de modifier une matrice de poids W (d × k), on la <strong>gèle</strong> et on apprend une mise à jour de rang faible : <code>W' = W + (α/r)·B·A</code>, avec B (d × r), A (r × k) et r petit (8 à 64). On entraîne moins de 1 % des paramètres ; l'adaptateur pèse quelques Mo. <strong>QLoRA</strong> charge en plus le modèle de base en 4 bits (NF4) : un modèle de 8 milliards de paramètres se fine-tune sur un seul GPU grand public.</p>
-  </div>
-
-  <div class="lab glass">
-    <div class="lt"><span class="ic">%</span>Combien de paramètres LoRA entraîne-t-il ?</div>
-    <label><span class="lv">Dimension de la couche (d = k) <b id="dval">4096</b></span><input type="range" id="dslider" min="1024" max="8192" step="512" value="4096"></label>
-    <label><span class="lv">Rang r <b id="rval">16</b></span><input type="range" id="rslider" min="1" max="128" value="16"></label>
-    <div class="stats">
-      <div class="stat"><span class="l">Fine-tuning complet</span><span class="v" id="full">16,8 M</span><span class="n">d × k</span></div>
-      <div class="stat"><span class="l">LoRA</span><span class="v acc" id="lora">131 k</span><span class="n" id="ratio">0,78 %</span></div>
-    </div>
-  </div>
-
-  <h3>L'outillage</h3>
-  <div class="list glass">
-    <div class="row"><span class="t">TRL</span><span class="s">Hugging Face. Trainers prêts à l'emploi : <code>SFTTrainer</code>, <code>DPOTrainer</code>, <code>GRPOTrainer</code>. Fonctionne avec <b>PEFT</b>, qui fournit LoRA.</span></div>
-    <div class="row"><span class="t">Unsloth</span><span class="s">Noyaux de calcul réécrits : environ 2× plus rapide, beaucoup moins de VRAM. Compatible TRL, idéal pour QLoRA sur un seul GPU.</span></div>
-    <div class="row"><span class="t">Données</span><span class="s">Quelques centaines à milliers d'exemples propres valent mieux que beaucoup d'exemples bruités. Gardez un jeu d'éval séparé et comparez au modèle de base.</span></div>
-  </div>
-  <div class="code">
-    <span class="cap">SFT + LoRA avec TRL</span>
-<pre><span class="k">from</span> datasets <span class="k">import</span> load_dataset
-<span class="k">from</span> peft <span class="k">import</span> LoraConfig
-<span class="k">from</span> trl <span class="k">import</span> SFTTrainer, SFTConfig
-
-ds = load_dataset(<span class="s">"json"</span>,
-    data_files=<span class="s">"train.jsonl"</span>, split=<span class="s">"train"</span>)
+SELECT content FROM chunks
+ORDER BY embedding <=> $1
+LIMIT 50;`},
+ {k:"quiz",q:"Dans pgvector, <=> calcule…",o:["La distance cosinus","La distance L2","Le produit scalaire"],a:0,w:"<=> cosinus, <-> L2, <#> produit scalaire négatif."},
+ {k:"warn",h:"Les pièges",rows:[
+   ["Taille des chunks","Trop petits : sens perdu. Trop gros : signal dilué."],
+   ["Changer d'embedding","Il faut tout réindexer."],
+   ["Questions complexes","Donnez un outil de recherche à l'agent : RAG agentique."]]}
+]},
+{id:"openweight",t:"Open-weight",c:"--pink",min:10,cards:[
+ {k:"idea",h:"Open-weight",big:"Les <em>poids</em> sont téléchargeables.<br>Pas forcément le reste.",sub:"Données et code d'entraînement restent souvent fermés, et la licence n'autorise pas tout. Familles : Llama, Qwen, Mistral, Gemma, DeepSeek, gpt-oss."},
+ {k:"rows",h:"Avant de fine-tuner",num:true,rows:[
+   ["Prompt","Souvent suffisant."],
+   ["Exemples few-shot","Montrer plutôt qu'expliquer."],
+   ["RAG","Pour les connaissances."],
+   ["Fine-tuning","Pour changer un comportement : format, style, tâche étroite."]]},
+ {k:"quiz",q:"Catalogue de 50 000 produits mis à jour chaque jour. Que faire ?",o:["Fine-tuner chaque nuit","Un RAG sur le catalogue","Un prompt plus long"],a:1,w:"Le fine-tuning apprend mal les faits et vieillit tout de suite. Le RAG lit l'info à jour."},
+ {k:"rows",h:"3 façons d'entraîner",rows:[
+   ["SFT","Paires instruction → réponse idéale."],
+   ["DPO","Paires réponse préférée / rejetée."],
+   ["RL vérifiable","Récompense issue d'un test ou d'un calcul (GRPO)."]]},
+ {k:"idea",h:"LoRA",big:"On <em>gèle</em> le modèle et on apprend une petite correction.",sub:"W' = W + B·A, avec un rang r petit (8 à 64). Moins de 1 % des paramètres, un adaptateur de quelques Mo. QLoRA : base en 4 bits, un seul GPU suffit."},
+ {k:"lora",h:"Combien de paramètres ?",lead:"Pour une matrice d × d."},
+ {k:"quiz",q:"LoRA, matrice 4096 × 4096, r = 8 : paramètres entraînés ?",o:["16,8 millions","65 536","4 096"],a:1,w:"r × (d + k) = 8 × 8192 = 65 536, environ 0,4 %."},
+ {k:"rows",h:"L'outillage",rows:[
+   ["TRL","SFTTrainer, DPOTrainer, GRPOTrainer (Hugging Face)."],
+   ["PEFT","Fournit LoRA."],
+   ["Unsloth","~2× plus rapide, bien moins de VRAM."]]},
+ {k:"code",h:"Fine-tuner avec TRL",lead:"SFT + LoRA en une dizaine de lignes.",code:`from peft import LoraConfig
+from trl import SFTTrainer, SFTConfig
 
 trainer = SFTTrainer(
-    model=<span class="s">"Qwen/Qwen3-8B"</span>,
+    model="Qwen/Qwen3-8B",
     train_dataset=ds,
-    args=SFTConfig(output_dir=<span class="s">"out"</span>,
-        num_train_epochs=2, learning_rate=2e-4,
-        per_device_train_batch_size=4),
-    peft_config=LoraConfig(r=16, lora_alpha=32,
-        lora_dropout=0.05,
-        target_modules=<span class="s">"all-linear"</span>),
-)
-trainer.train()   <span class="c"># out/ = adaptateur LoRA</span></pre>
-  </div>
+    args=SFTConfig(output_dir="out",
+                   learning_rate=2e-4),
+    peft_config=LoraConfig(r=16,
+        lora_alpha=32,
+        target_modules="all-linear"))
+trainer.train()`},
+ {k:"idea",h:"Servir avec vLLM",big:"<em>PagedAttention</em> + <em>continuous batching</em>.",sub:"Le KV cache est rangé en pages, sans gaspillage. Les requêtes entrent et sortent du lot à chaque token. Résultat : beaucoup plus de débit. API compatible OpenAI."},
+ {k:"code",h:"Lancer le serveur",lead:"Modèle de base + votre adaptateur.",code:`vllm serve Qwen/Qwen3-8B \\
+  --enable-lora \\
+  --lora-modules support=./out
 
-  <div class="prose">
-    <h3>Servir avec vLLM</h3>
-    <p>Le moteur d'inférence open source le plus répandu en production. Deux idées à connaître :</p>
-  </div>
-  <div class="list glass">
-    <div class="row"><span class="t">PagedAttention</span><span class="s">Le KV cache (clés et valeurs d'attention gardées pour chaque token déjà vu) est stocké en pages, comme la mémoire virtuelle d'un OS. Presque plus de gaspillage, donc plus de requêtes en parallèle.</span></div>
-    <div class="row"><span class="t">Continuous batching</span><span class="s">Les requêtes entrent et sortent du batch à chaque pas de génération, au lieu d'attendre la plus longue. Le débit augmente fortement.</span></div>
-    <div class="row"><span class="t">Et aussi</span><span class="s">API compatible OpenAI, prefix caching, décodage spéculatif, multi-GPU, plusieurs adaptateurs LoRA sur un même modèle, quantization (AWQ, GPTQ, FP8). Alternatives : SGLang, TGI, TensorRT-LLM ; llama.cpp ou Ollama en local.</span></div>
-  </div>
-  <div class="code">
-    <span class="cap">Servir le modèle + l'adaptateur</span>
-<pre>vllm serve Qwen/Qwen3-8B \
-  --enable-lora --lora-modules support=./out \
-  --max-model-len 16384
-
-<span class="c"># N'importe quel client OpenAI fonctionne</span>
-curl localhost:8000/v1/chat/completions \
-  -H <span class="s">"Content-Type: application/json"</span> \
-  -d <span class="s">'{"model": "support",
-       "messages": [{"role": "user",
-                     "content": "Bonjour"}]}'</span></pre>
-  </div>
-
-  <div class="lab glass">
-    <div class="lt"><span class="ic">GB</span>Quelle VRAM pour les poids ?</div>
-    <label><span class="lv">Paramètres (milliards) <b id="pval">8</b></span><input type="range" id="pslider" min="1" max="120" value="8"></label>
-    <label><span class="lv">Précision</span>
-      <select id="prec">
-        <option value="2">BF16 / FP16 · 2 octets</option>
-        <option value="1">FP8 / INT8 · 1 octet</option>
-        <option value="0.5">INT4 (AWQ, GPTQ, NF4) · 0,5 octet</option>
-      </select>
-    </label>
-    <div class="stat"><span class="l">Poids seuls</span><span class="v acc" id="vram">16 Go</span><span class="n">Ajoutez 20 à 40 % pour le KV cache, qui grandit avec le contexte et le nombre de requêtes simultanées.</span></div>
-  </div>
-  <div class="quiz" data-quiz="openweight"></div>
-</section>
-
-<!-- ============ 6. CODE ============ -->
-<section class="mod" id="code" data-mod="code" data-title="Assistants de code" style="--c:var(--teal)">
-  <div class="mod-head">
-    <div class="top"><span class="ic">6</span><div class="meta"><b>Module 6 · 6 min</b><span>Claude Code · Cursor · Codex</span></div></div>
-    <h2>Assistants de code : aller vite sans perdre le contrôle.</h2>
-  </div>
-  <p class="key glass">Ces outils sont eux-mêmes des agents : un LLM, des outils (lire, éditer, lancer des commandes) et une boucle. Tout ce qui précède s'applique. Votre valeur ajoutée, c'est le contexte que vous donnez et la relecture que vous faites.</p>
-  <div class="list glass">
-    <div class="row"><span class="t">Claude Code</span><span class="s">Agent en terminal, IDE, web et desktop. <code>CLAUDE.md</code>, sous-agents, hooks, MCP, Skills, slash commands, mode plan.</span></div>
-    <div class="row"><span class="t">Cursor</span><span class="s">IDE dérivé de VS Code. Autocomplétion, mode agent, règles de projet, indexation du code.</span></div>
-    <div class="row"><span class="t">Codex</span><span class="s">CLI, IDE et cloud (OpenAI). <code>AGENTS.md</code>, tâches parallèles dans le cloud, sandbox.</span></div>
-    <div class="row"><span class="t">Autres</span><span class="s">GitHub Copilot, Windsurf, Gemini CLI, Aider… Même logique : contexte, outils, boucle.</span></div>
-  </div>
-  <h3>Une pratique qui tient</h3>
-  <div class="list glass">
-    <div class="row"><span class="t">Fichier de contexte court</span><span class="s"><code>CLAUDE.md</code> / <code>AGENTS.md</code> : commandes de build et de test, conventions, ce qu'il ne faut pas toucher.</span></div>
-    <div class="row"><span class="t">Plan d'abord</span><span class="s">Demander un plan avant le code sur toute tâche non triviale.</span></div>
-    <div class="row"><span class="t">Petits pas</span><span class="s">Tâches petites, diffs lisibles, un commit par étape.</span></div>
-    <div class="row"><span class="t">Tests comme oracle</span><span class="s">Écrire ou valider les tests d'abord, laisser l'agent les lancer.</span></div>
-    <div class="row"><span class="t">Session neuve</span><span class="s">Nouvelle tâche, nouvelle session : pas de contexte pollué.</span></div>
-  </div>
-  <div class="warn glass">
-    <div class="wt"><span class="ic">!</span>Ce qu'on relit toujours</div>
-    <ul>
-      <li><strong>APIs ou paquets inventés</strong> : vérifiez qu'ils existent. Des attaquants enregistrent les noms hallucinés (<em>slopsquatting</em>).</li>
-      <li><strong>Tests trafiqués</strong> : assertions affaiblies, cas supprimés, mocks qui testent le mock.</li>
-      <li><strong>Erreurs avalées</strong> : <code>try/except: pass</code>, valeurs par défaut silencieuses.</li>
-      <li><strong>Sécurité</strong> : secrets en dur, injection SQL ou shell, validation absente.</li>
-      <li><strong>Sur-ingénierie et doublons</strong> : abstractions inutiles, code existant réécrit à côté.</li>
-      <li><strong>Assurance trompeuse</strong> : « c'est corrigé » sans que les tests aient tourné.</li>
-    </ul>
-  </div>
-  <div class="quiz" data-quiz="code"></div>
-</section>
-
-<!-- ============ MÉMO ============ -->
-<section class="mod" id="recap" data-title="Fiche mémo" style="--c:var(--purple)">
-  <div class="mod-head">
-    <div class="top"><span class="ic">✓</span><div class="meta"><b>Fiche mémo</b><span>Une phrase par sujet, à savoir dire</span></div></div>
-    <h2>Ce qu'il faut retenir.</h2>
-  </div>
-  <div class="memo">
-    <div class="glass"><b><span class="ic" style="--c:var(--blue)">1</span>Agents</b>Le modèle demande, le code exécute, le résultat revient, on boucle avec des garde-fous. Un workflow d'abord, un agent quand le chemin ne peut pas être écrit d'avance.</div>
-    <div class="glass"><b><span class="ic" style="--c:var(--blue)">1</span>Frameworks</b>LangGraph pour le contrôle et la persistance, PydanticAI pour le typage, OpenAI Agents SDK pour les handoffs, Claude Agent SDK pour un harnais complet.</div>
-    <div class="glass"><b><span class="ic" style="--c:var(--indigo)">2</span>MCP</b>Client-serveur JSON-RPC : tools, resources, prompts, via stdio ou Streamable HTTP. Gare au tool poisoning et à la trifecta létale.</div>
-    <div class="glass"><b><span class="ic" style="--c:var(--indigo)">2</span>Agent Skills</b>Des dossiers <code>SKILL.md</code> chargés progressivement : le savoir-faire, là où MCP apporte l'accès.</div>
-    <div class="glass"><b><span class="ic" style="--c:var(--orange)">3</span>Évals</b>Lire les traces, nommer les échecs, en faire des tests. Juges binaires calibrés contre l'humain. Traces OpenTelemetry vers Langfuse.</div>
-    <div class="glass"><b><span class="ic" style="--c:var(--green)">4</span>RAG</b>Hybride dense + BM25, fusion RRF, reranking cross-encoder, pgvector par défaut, Qdrant à grande échelle. Mesurer le recall@k.</div>
-    <div class="glass"><b><span class="ic" style="--c:var(--pink)">5</span>Fine-tuning</b>Pour changer un comportement, pas pour ajouter des connaissances. LoRA : moins de 1 % des paramètres. TRL + PEFT, Unsloth pour aller vite.</div>
-    <div class="glass"><b><span class="ic" style="--c:var(--pink)">5</span>Serving</b>vLLM : PagedAttention + continuous batching, API compatible OpenAI, multi-LoRA. VRAM ≈ paramètres × octets + KV cache.</div>
-  </div>
-</section>
-</div>
-
-<!-- barre flottante -->
-<nav class="dock glass" aria-label="Navigation">
-  <button class="ib" id="openToc" type="button" aria-label="Ouvrir le sommaire">
-    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-  </button>
-  <button class="cur" id="curBtn" type="button" aria-label="Ouvrir le sommaire">
-    <b id="curTitle">Introduction</b>
-    <span id="curSub">6 modules · 60 min</span>
-    <div class="bar"><i id="readBar"></i></div>
-  </button>
-  <button class="timer" id="tgo" type="button" aria-label="Démarrer le chrono">
-    <svg viewBox="0 0 24 24" id="tIcon"><path d="M7 4l13 8-13 8z"/></svg><span id="clock">60:00</span>
-  </button>
-</nav>
-
-<div class="scrim" id="scrim" hidden></div>
-<div class="sheet glass" id="sheet" role="dialog" aria-modal="true" aria-label="Sommaire" hidden>
-  <div class="grab"></div>
-  <div class="sheet-head"><b>Sommaire</b><button class="close" id="closeToc" type="button" aria-label="Fermer">✕</button></div>
-  <div class="list glass toc" id="toc">
-    <a href="#agents" data-m="agents"><span class="ic" style="--c:var(--blue)">1</span><span class="tx">Agents &amp; tool calling<span>14 min</span></span><span class="ok" hidden>✓</span></a>
-    <a href="#mcp" data-m="mcp"><span class="ic" style="--c:var(--indigo)">2</span><span class="tx">MCP &amp; Agent Skills<span>8 min</span></span><span class="ok" hidden>✓</span></a>
-    <a href="#evals" data-m="evals"><span class="ic" style="--c:var(--orange)">3</span><span class="tx">Évaluation &amp; traces<span>10 min</span></span><span class="ok" hidden>✓</span></a>
-    <a href="#rag" data-m="rag"><span class="ic" style="--c:var(--green)">4</span><span class="tx">RAG<span>12 min</span></span><span class="ok" hidden>✓</span></a>
-    <a href="#openweight" data-m="openweight"><span class="ic" style="--c:var(--pink)">5</span><span class="tx">Open-weight<span>10 min</span></span><span class="ok" hidden>✓</span></a>
-    <a href="#code" data-m="code"><span class="ic" style="--c:var(--teal)">6</span><span class="tx">Assistants de code<span>6 min</span></span><span class="ok" hidden>✓</span></a>
-    <a href="#recap"><span class="ic" style="--c:var(--purple)">✓</span><span class="tx">Fiche mémo<span>révision finale</span></span></a>
-  </div>
-  <div class="list glass">
-    <div class="row"><span class="s" id="score">Quiz : 0 bonne réponse</span></div>
-  </div>
-  <button class="reset glass" id="treset" type="button">Remettre le chrono à 60:00</button>
-  <button class="reset glass" id="resetall" type="button">Effacer ma progression</button>
-</div>
-
-<script>
-const MODS=["agents","mcp","evals","rag","openweight","code"];
-const TITLES={agents:"Agents & tool calling",mcp:"MCP & Agent Skills",evals:"Évaluation & traces",rag:"RAG",openweight:"Open-weight",code:"Assistants de code"};
-const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const $=id=>document.getElementById(id);
-
-/* ---------- QUIZ ---------- */
-const QUIZ={
-agents:[
- {q:"Dans le tool calling, qui exécute la fonction get_weather ?",o:["Le modèle, côté serveur du fournisseur","Votre code, qui renvoie ensuite le résultat au modèle","Le JSON Schema","Personne, le modèle devine le résultat"],a:1,w:"Le modèle produit seulement une demande structurée (nom + arguments). L'exécution se fait dans votre code, ou dans le framework qui l'enrobe ; le résultat revient sous forme de tool_result."},
- {q:"Quelle condition arrête normalement la boucle agentique ?",o:["Le modèle répond sans demander d'outil (stop_reason ≠ tool_use)","Un outil renvoie une erreur","Après exactement un appel d'outil","Quand le contexte est plein"],a:0,w:"On boucle tant que le modèle demande des outils. Une erreur d'outil lui est renvoyée pour qu'il se corrige. On ajoute un plafond d'itérations et de coût comme garde-fou."},
- {q:"Processus en 6 étapes connues, avec reprise après crash et validation humaine à l'étape 4. Choix le plus naturel ?",o:["Un agent autonome sans structure","LangGraph avec checkpointer et interrupt","Un seul prompt très long","Un serveur MCP"],a:1,w:"Chemin connu et besoin de persistance : c'est un workflow explicite. Le checkpointing de LangGraph permet la reprise, interrupt() gère la validation humaine."},
- {q:"Ce qui distingue le plus OpenAI Agents SDK :",o:["Les handoffs entre agents","Il ne fonctionne qu'en TypeScript","Il impose une base vectorielle","Il n'a pas de tracing"],a:0,w:"Ses primitives sont Agent, handoffs, guardrails et sessions, avec un tracing intégré. Un handoff passe la conversation à un agent spécialisé."}
-],
-mcp:[
- {q:"Quelle primitive MCP est contrôlée par le modèle (il décide de l'invoquer) ?",o:["Resources","Prompts","Tools","Roots"],a:2,w:"Tools : contrôlés par le modèle. Resources : par l'application. Prompts : par l'utilisateur. Roots est une primitive côté client."},
- {q:"Quel transport pour un serveur MCP distant, partagé par plusieurs utilisateurs ?",o:["stdio","Streamable HTTP, avec OAuth","gRPC","WebRTC"],a:1,w:"stdio sert aux serveurs locaux lancés en sous-processus. Pour un serveur distant : Streamable HTTP et autorisation OAuth 2.1."},
- {q:"Pourquoi peut-on installer des centaines d'Agent Skills sans saturer le contexte ?",o:["Elles sont compressées","Seuls nom et description sont chargés au départ ; le reste à la demande","Elles tournent dans un autre modèle","Elles ne contiennent jamais de texte"],a:1,w:"C'est la divulgation progressive : métadonnées d'abord, corps du SKILL.md quand c'est pertinent, fichiers annexes seulement si nécessaire."}
-],
-evals:[
- {q:"Par quoi commencer pour évaluer un agent en production ?",o:["Une métrique générique sur étagère","Lire et annoter des traces réelles pour identifier les modes d'échec","Une note de 1 à 10 par un LLM sur tout","Augmenter la température"],a:1,w:"L'analyse d'erreurs sur de vraies traces dit quoi mesurer. Les métriques génériques ratent souvent les problèmes propres à votre produit."},
- {q:"Votre juge compare A et B et préfère A dans 70 % des cas, quel que soit le contenu. Biais probable ?",o:["Biais de position","Biais de récence des données","Surapprentissage","Fuite de données"],a:0,w:"Biais de position. Remède : évaluer chaque paire dans les deux ordres et ne garder que les verdicts cohérents."},
- {q:"Comment savoir si votre juge LLM est fiable ?",o:["Le plus gros modèle suffit","Mesurer son accord avec des annotations humaines","Vérifier qu'il répond en JSON","Le lancer deux fois"],a:1,w:"On calibre contre l'humain : vrais positifs et vrais négatifs sur une centaine de cas annotés, puis on améliore le prompt du juge."},
- {q:"Dans OpenTelemetry, un appel LLM à l'intérieur d'une requête utilisateur est…",o:["Une trace","Un span enfant de la trace de la requête","Une métrique","Un log isolé"],a:1,w:"La trace couvre la requête ; chaque étape (appel LLM, outil, retrieval) est un span, et les spans s'imbriquent."}
-],
-rag:[
- {q:"On cherche « erreur E-4012 » et la recherche dense ne trouve pas le bon document. Meilleure correction ?",o:["Un modèle d'embedding plus grand","Ajouter BM25 en recherche hybride","Augmenter la température","Des chunks plus longs"],a:1,w:"Codes exacts, références et noms propres sont le point fort de la recherche lexicale. L'hybride dense + BM25 couvre les deux cas."},
- {q:"Avec RRF (k = 60), un document 1er en dense et absent de BM25 obtient :",o:["1/61 ≈ 0,0164","1/60","61","0, il est éliminé"],a:0,w:"score = Σ 1/(k + rang) sur les listes où le document apparaît : ici seulement 1/(60+1)."},
- {q:"Pourquoi ne pas appliquer le reranker (cross-encoder) à tout le corpus ?",o:["Il est moins précis qu'un bi-encoder","Il lit chaque paire question-document : trop coûteux à grande échelle","Il ne marche qu'en anglais","Il ne marche qu'avec Qdrant"],a:1,w:"Le cross-encoder est plus précis mais ne peut pas précalculer les vecteurs. On le réserve aux 20 à 100 premiers candidats."},
- {q:"Dans pgvector, l'opérateur <=> calcule :",o:["La distance cosinus","Le produit scalaire","La distance L2","Une égalité"],a:0,w:"<=> distance cosinus, <-> distance L2, <#> produit scalaire négatif."}
-],
-openweight:[
- {q:"L'assistant doit connaître un catalogue de 50 000 produits mis à jour chaque jour. Que faire ?",o:["Fine-tuner chaque nuit","Un RAG sur le catalogue","LoRA de rang 128","Allonger le prompt système"],a:1,w:"Le fine-tuning apprend mal les faits et vieillit tout de suite. Le RAG va chercher l'information à jour au moment de la question."},
- {q:"LoRA sur une matrice 4096 × 4096 avec r = 8 : combien de paramètres entraînés ?",o:["16,8 millions","65 536","8","4096"],a:1,w:"r × (d + k) = 8 × 8192 = 65 536, soit environ 0,4 % des 16,8 M de la matrice."},
- {q:"Qu'est-ce qui permet surtout à vLLM de servir beaucoup de requêtes simultanées ?",o:["Un modèle plus petit","PagedAttention et le continuous batching","Le fine-tuning","Le JSON mode"],a:1,w:"PagedAttention évite de gaspiller la mémoire du KV cache, le continuous batching remplit le GPU à chaque pas de génération."},
- {q:"Un modèle de 70 milliards de paramètres en INT4 occupe pour ses poids environ :",o:["35 Go","140 Go","70 Go","9 Go"],a:0,w:"70 × 0,5 octet = 35 Go, plus le KV cache. En BF16, il faudrait environ 140 Go."}
-],
-code:[
- {q:"L'agent annonce « tous les tests passent » après avoir modifié le fichier de tests. Premier réflexe ?",o:["Merger","Relire le diff des tests : assertions affaiblies, cas supprimés ?","Relancer l'agent","Désactiver la CI"],a:1,w:"Modifier le test pour qu'il passe est un mode d'échec connu. Le diff des tests se relit avec autant de soin que le code."},
- {q:"Le code généré importe un paquet inconnu. Risque principal ?",o:["Aucun","Paquet halluciné, peut-être enregistré par un attaquant (slopsquatting)","Perte de performance","Conflit de licence uniquement"],a:1,w:"Les noms de paquets inventés sont prévisibles ; des attaquants publient des paquets malveillants sous ces noms. Vérifiez existence, éditeur, historique."},
- {q:"À quoi sert un CLAUDE.md ou un AGENTS.md ?",o:["Stocker les secrets","Donner à l'agent le contexte durable du projet : commandes, conventions, interdits","Remplacer les tests","Configurer la CI"],a:1,w:"Il est lu à chaque session. Gardez-le court et concret : comment builder, comment tester, ce qu'il ne faut pas faire."}
-]};
-const TOTAL=MODS.reduce((s,m)=>s+QUIZ[m].length,0);
-let answers=store.get("ag60.answers",{}), done=store.get("ag60.done",{});
-
-function updateScore(){
-  let ok=0,n=0;for(const k in answers){n++;const[m,i]=k.split(":");if(QUIZ[m]&&QUIZ[m][i]&&QUIZ[m][i].a===answers[k])ok++}
-  $("score").textContent=`Quiz : ${ok} bonne${ok>1?"s":""} réponse${ok>1?"s":""} sur ${n} tentée${n>1?"s":""} (${TOTAL} au total)`;
-  $("hQuiz").textContent=ok;
-  $("hDone").textContent=MODS.filter(m=>done[m]).length+"/6";
-}
-function renderQuiz(el){
-  const m=el.dataset.quiz;el.innerHTML="";
-  const h=document.createElement("div");h.className="qh";h.innerHTML='<span class="ic">?</span><b>Vérifiez vos acquis</b>';el.appendChild(h);
-  QUIZ[m].forEach((it,i)=>{
-    const key=m+":"+i,box=document.createElement("div");box.className="q";
-    const t=document.createElement("div");t.className="qt";t.textContent=it.q;box.appendChild(t);
-    const opts=document.createElement("div");opts.className="opts glass";
-    const why=document.createElement("p");why.className="why";why.hidden=true;why.textContent=it.w;
-    const btns=it.o.map((o,j)=>{const b=document.createElement("button");b.type="button";b.className="opt";
-      const mk=document.createElement("span");mk.className="mk";const tx=document.createElement("span");tx.textContent=o;b.append(mk,tx);
-      b.addEventListener("click",()=>{answers[key]=j;store.set("ag60.answers",answers);paint();updateScore()});opts.appendChild(b);return b});
-    function paint(){const a=answers[key];if(a===undefined)return;btns.forEach((b,j)=>{b.disabled=true;const mk=b.firstChild;
-      if(j===it.a){b.classList.add("right");mk.textContent="✓"}else if(j===a){b.classList.add("wrong");mk.textContent="✕"}else b.classList.add("dim")});why.hidden=false}
-    paint();box.append(opts,why);el.appendChild(box);
-  });
-  const row=document.createElement("label");row.className="toggle-row glass";row.htmlFor="done-"+m;
-  row.innerHTML=`<span>Module terminé</span><input type="checkbox" class="switch" id="done-${m}">`;
-  el.appendChild(row);const cb=row.querySelector("input");cb.checked=!!done[m];
-  cb.addEventListener("change",()=>{done[m]=cb.checked;store.set("ag60.done",done);paintToc();updateScore()});
-  const idx=MODS.indexOf(m);const nx=document.createElement("a");nx.className="next glass";
-  if(idx<MODS.length-1){nx.href="#"+MODS[idx+1];nx.innerHTML=`<div><span>Module suivant</span><b>${idx+2}. ${TITLES[MODS[idx+1]]}</b></div>`}
-  else{nx.href="#recap";nx.innerHTML=`<div><span>Dernière étape</span><b>Fiche mémo</b></div>`}
-  el.appendChild(nx);
-}
-document.querySelectorAll("[data-quiz]").forEach(renderQuiz);
-function paintToc(){document.querySelectorAll("#toc a[data-m]").forEach(a=>{a.querySelector(".ok").hidden=!done[a.dataset.m]})}
-paintToc();updateScore();
-
-/* ---------- SOMMAIRE ---------- */
-function openSheet(){$("scrim").hidden=false;$("sheet").hidden=false}
-function closeSheet(){$("scrim").hidden=true;$("sheet").hidden=true}
-$("openToc").addEventListener("click",openSheet);$("curBtn").addEventListener("click",openSheet);
-$("closeToc").addEventListener("click",closeSheet);$("scrim").addEventListener("click",closeSheet);
-document.querySelectorAll("#toc a").forEach(a=>a.addEventListener("click",closeSheet));
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
-$("resetall").addEventListener("click",()=>{answers={};done={};store.set("ag60.answers",{});store.set("ag60.done",{});document.querySelectorAll("[data-quiz]").forEach(renderQuiz);paintToc();updateScore();closeSheet()});
-
-/* ---------- MODULE COURANT ---------- */
-const secs=[...document.querySelectorAll("section.mod")];
-function onScroll(){
-  const y=window.innerHeight*0.35;let cur=null;
-  for(const s of secs){if(s.getBoundingClientRect().top<y)cur=s}
-  if(!cur){$("curTitle").textContent="Introduction";$("curSub").textContent="6 modules · 60 min";$("readBar").style.width="0%";return}
-  const r=cur.getBoundingClientRect();const p=Math.min(1,Math.max(0,(y-r.top)/r.height));
-  $("curTitle").textContent=cur.dataset.title;
-  const i=MODS.indexOf(cur.dataset.mod);
-  $("curSub").textContent=i>=0?`Module ${i+1} sur 6 · ${Math.round(p*100)} %`:"Révision finale";
-  $("readBar").style.width=(p*100)+"%";
-}
-window.addEventListener("scroll",onScroll,{passive:true});onScroll();
-
-/* ---------- CHRONO ---------- */
-let left=store.get("ag60.left",3600),running=false,iv=null;
-const PLAY='<path d="M7 4l13 8-13 8z"/>',PAUSE='<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
-function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
-function showClock(){$("clock").textContent=fmt(left);$("hTime").textContent=Math.ceil(left/60)+"′"}
-showClock();
-$("tgo").addEventListener("click",()=>{
-  if(left<=0)return;running=!running;$("tgo").classList.toggle("on",running);$("tIcon").innerHTML=running?PAUSE:PLAY;
-  $("tgo").setAttribute("aria-label",running?"Mettre le chrono en pause":"Reprendre le chrono");
-  if(running){iv=setInterval(()=>{left--;showClock();if(left%10===0)store.set("ag60.left",left);if(left<=0){clearInterval(iv);running=false;$("tgo").classList.remove("on");$("tIcon").innerHTML=PLAY;store.set("ag60.left",0)}},1000)}
-  else{clearInterval(iv);store.set("ag60.left",left)}
-});
-$("treset").addEventListener("click",()=>{clearInterval(iv);running=false;left=3600;store.set("ag60.left",left);showClock();$("tgo").classList.remove("on");$("tIcon").innerHTML=PLAY;closeSheet()});
-
-/* ---------- SEGMENTED ---------- */
-document.querySelectorAll("[data-tabs]").forEach(list=>{
-  const g=list.dataset.tabs;
-  list.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
-    list.querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b?"true":"false"));
-    document.querySelectorAll(`[data-panel="${g}"]`).forEach(p=>p.hidden=p.dataset.id!==b.dataset.tab);
-  }));
-});
-
-/* ---------- SIMULATEUR ---------- */
-const STEPS=[
- {c:"user",who:"Utilisateur",t:"Je prends un parapluie à Lyon ?"},
- {c:"model",who:"Modèle · stop_reason: tool_use",t:"Je dois vérifier la météo.",code:'{"type": "tool_use",\n "id": "toolu_01",\n "name": "get_weather",\n "input": {"city": "Lyon"}}'},
- {c:"sys",who:"Votre code",t:"Exécute get_weather(\"Lyon\") → 14 °C, 3 mm de pluie. Le modèle, lui, n'a rien exécuté."},
- {c:"user",who:"Message user · tool_result",t:"Le résultat repart vers le modèle :",code:'{"type": "tool_result",\n "tool_use_id": "toolu_01",\n "content": "{\\"temp_c\\": 14,\\n  \\"pluie_mm\\": 3}"}'},
- {c:"model",who:"Modèle · stop_reason: end_turn",t:"Oui, 3 mm de pluie sont prévus à Lyon : prenez-le."},
- {c:"sys",who:"Fin de boucle",t:"Aucune nouvelle demande d'outil : la boucle s'arrête."}
+# Puis tout client OpenAI marche :
+# model = "support"`},
+ {k:"quiz",q:"Ce qui permet à vLLM de servir beaucoup de requêtes :",o:["Un modèle plus petit","PagedAttention + continuous batching","Le fine-tuning"],a:1,w:"Moins de mémoire gaspillée pour le KV cache, et un GPU rempli à chaque pas."},
+ {k:"vram",h:"Quelle mémoire GPU ?",lead:"Paramètres × octets par paramètre, plus 20 à 40 % pour le KV cache."},
+ {k:"quiz",q:"70 milliards de paramètres en INT4 : poids ≈ ?",o:["35 Go","140 Go","9 Go"],a:0,w:"70 × 0,5 octet = 35 Go. En BF16 : 140 Go."}
+]},
+{id:"code",t:"Assistants de code",c:"--teal",min:6,cards:[
+ {k:"idea",h:"Claude Code, Cursor, Codex",big:"Ce sont des <em>agents</em> : LLM + outils + boucle.",sub:"Votre valeur : le contexte que vous donnez et la relecture que vous faites."},
+ {k:"rows",h:"Les outils",rows:[
+   ["Claude Code","Terminal, IDE, web. CLAUDE.md, sous-agents, hooks, MCP, Skills."],
+   ["Cursor","IDE dérivé de VS Code. Mode agent, règles de projet."],
+   ["Codex","CLI et cloud (OpenAI). AGENTS.md, tâches parallèles."]]},
+ {k:"rows",h:"Une pratique qui tient",num:true,rows:[
+   ["Contexte court","CLAUDE.md : build, tests, conventions, interdits."],
+   ["Plan d'abord","Avant toute tâche non triviale."],
+   ["Petits pas","Diffs lisibles, un commit par étape."],
+   ["Tests comme oracle","L'agent les lance lui-même."]]},
+ {k:"warn",h:"Ce qu'on relit toujours",rows:[
+   ["Paquets inventés","Vérifiez qu'ils existent (slopsquatting)."],
+   ["Tests trafiqués","Assertions affaiblies, cas supprimés."],
+   ["Erreurs avalées","try/except: pass, défauts silencieux."],
+   ["« C'est corrigé »","Sans que les tests aient tourné."]]},
+ {k:"quiz",q:"L'agent dit « tests OK » après avoir modifié les tests. Réflexe ?",o:["Merger","Relire le diff des tests","Relancer l'agent"],a:1,w:"Affaiblir un test pour qu'il passe est un échec classique. Le diff des tests se relit autant que le code."},
+ {k:"quiz",q:"Le code importe un paquet inconnu. Risque ?",o:["Aucun","Paquet halluciné, peut-être piégé","Lenteur"],a:1,w:"Des attaquants publient des paquets sous les noms que les LLM inventent. Vérifiez l'existence et l'éditeur."},
+ {k:"quiz",q:"À quoi sert un CLAUDE.md ?",o:["Stocker des secrets","Donner le contexte durable du projet","Remplacer la CI"],a:1,w:"Lu à chaque session : comment builder, tester, et ce qu'il ne faut pas faire."}
+]},
+{id:"recap",t:"Révision express",c:"--purple",min:3,cards:[
+ {k:"idea",h:"Agents",big:"Le modèle <em>demande</em>, le code <em>exécute</em>, on boucle.",sub:"Workflow d'abord. LangGraph pour le contrôle, PydanticAI pour le typage, OpenAI SDK pour les handoffs, Claude Agent SDK pour un harnais complet."},
+ {k:"idea",h:"MCP & Skills",big:"MCP donne l'<em>accès</em>, les Skills le <em>savoir-faire</em>.",sub:"Tools, resources, prompts via stdio ou HTTP. Skills chargées progressivement. Gare à la trifecta létale."},
+ {k:"idea",h:"Évals",big:"Lire les traces, nommer les échecs, en faire des <em>tests</em>.",sub:"Juges binaires calibrés contre l'humain. OpenTelemetry vers Langfuse."},
+ {k:"idea",h:"RAG",big:"<em>Hybride</em> + RRF + <em>reranking</em>.",sub:"pgvector par défaut, Qdrant à grande échelle. Mesurer le recall@k."},
+ {k:"idea",h:"Open-weight",big:"Fine-tuner un <em>comportement</em>, pas des connaissances.",sub:"LoRA < 1 % des paramètres. TRL + PEFT, Unsloth. vLLM pour servir. VRAM ≈ paramètres × octets + KV cache."},
+ {k:"idea",h:"Assistants de code",big:"Du contexte en entrée, une <em>relecture</em> en sortie.",sub:"Plan, petits pas, tests. Méfiance envers les paquets inconnus et les tests modifiés."}
+]}
 ];
-let si=0;const log=$("simlog");
-function addStep(s){const d=document.createElement("div");d.className="b "+s.c;const w=document.createElement("span");w.className="who";w.textContent=s.who;const p=document.createElement("span");p.textContent=s.t;d.append(w,p);if(s.code){const pr=document.createElement("pre");pr.textContent=s.code;d.appendChild(pr)}log.appendChild(d)}
-function simReset(){log.innerHTML="";si=0;addStep(STEPS[si++]);$("simnext").disabled=false}
-$("simnext").addEventListener("click",()=>{if(si<STEPS.length)addStep(STEPS[si++]);if(si>=STEPS.length)$("simnext").disabled=true});
-$("simreset").addEventListener("click",simReset);simReset();
 
-/* ---------- RRF ---------- */
-const DOCS=[["Guide de dépannage imprimante",1,4],["Erreur E-4012 : bourrage papier",9,1],["FAQ garantie",2,7],["Notice installation pilote",3,3],["Forum : l'imprimante bloque",4,null]];
-const rr=$("rrf");
-DOCS.forEach((d,i)=>{const r=document.createElement("div");r.className="r";
-  r.innerHTML=`<span class="nm">${d[0]}</span><span class="rank" id="rr${i}"></span>
-  <div class="ins"><label for="rd${i}">Dense</label><input type="number" inputmode="numeric" min="1" max="50" id="rd${i}" value="${d[1]??""}" placeholder="–">
-  <label for="rb${i}">BM25</label><input type="number" inputmode="numeric" min="1" max="50" id="rb${i}" value="${d[2]??""}" placeholder="–"><span class="sc" id="rs${i}"></span></div>`;rr.appendChild(r)});
-function rrf(){const k=+$("kslider").value;$("kval").textContent=k;
-  const sc=DOCS.map((d,i)=>{let s=0;const a=parseInt($("rd"+i).value),b=parseInt($("rb"+i).value);if(a>0)s+=1/(k+a);if(b>0)s+=1/(k+b);return s});
-  const order=[...sc.keys()].sort((x,y)=>sc[y]-sc[x]);
-  sc.forEach((s,i)=>{$("rs"+i).textContent=s.toFixed(4);const r=order.indexOf(i)+1;const c=$("rr"+i);c.textContent="#"+r;c.classList.toggle("first",r===1)})}
-rr.addEventListener("input",rrf);$("kslider").addEventListener("input",rrf);rrf();
+/* ================= ÉTAT ================= */
+const S={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let st=S.get("ag60v2",{pos:{},done:{},ans:{}});
+const save=()=>S.set("ag60v2",st);
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function hl(code){return code.split("\n").map(l=>{
+  const m=l.match(/^(.*?)((?:^|\s)(?:#|--)\s.*)$/);let body=esc(m?m[1]:l),com=m?esc(m[2]):"";
+  body=body.replace(/"([^"]*)"/g,'<span class="s">"$1"</span>').replace(/\b(from|import|def|return|for|in|if|break|CREATE|TABLE|INDEX|ON|USING|SELECT|FROM|ORDER BY|LIMIT|EXTENSION)\b/g,'<span class="k">$1</span>');
+  return body+(com?'<span class="c">'+com+'</span>':"")}).join("\n")}
 
-/* ---------- LORA / VRAM ---------- */
+/* ================= ACCUEIL ================= */
+function modProgress(m){return st.done[m.id]?1:Math.min(1,(st.pos[m.id]||0)/m.cards.length)}
+function renderHome(){
+  const box=$("mods");box.innerHTML="";
+  M.forEach((m,i)=>{
+    const b=document.createElement("button");b.type="button";b.className="mod";b.style.setProperty("--c",`var(${m.c})`);
+    const pr=modProgress(m);const nq=m.cards.filter(c=>c.k==="quiz").length;
+    b.innerHTML=`<span class="ic">${i<6?i+1:"✓"}</span><span class="tx"><b>${m.t}</b><span>${m.cards.length} cartes · ${m.min} min${nq?` · ${nq} quiz`:""}</span>${pr>0&&!st.done[m.id]?`<span class="mbar"><i style="width:${pr*100}%"></i></span>`:""}</span>${st.done[m.id]?'<span class="done">✓</span>':'<span class="chev"></span>'}`;
+    b.addEventListener("click",()=>openModule(i));box.appendChild(b);
+  });
+  const core=M.slice(0,6);const total=core.reduce((s,m)=>s+m.cards.length,0);
+  const seen=core.reduce((s,m)=>s+(st.done[m.id]?m.cards.length:Math.min(st.pos[m.id]||0,m.cards.length)),0);
+  const pct=Math.round(100*seen/total);
+  $("ringTxt").textContent=pct+"%";$("ringPr").style.strokeDashoffset=169.6*(1-pct/100);
+  const ni=core.findIndex(m=>!st.done[m.id]);const target=ni<0?6:ni;const m=M[target];
+  $("resumeTitle").textContent=m.t;
+  $("resumeSub").textContent=ni<0?"Tout est terminé · réviser":(st.pos[m.id]?`Reprendre · carte ${st.pos[m.id]+1}/${m.cards.length}`:(seen?"Module suivant":"Commencer"));
+  $("resume").onclick=()=>openModule(target);
+}
+let armed=false,armT=null;
+function disarm(){armed=false;$("reset").classList.remove("armed");$("reset").textContent="Recommencer à zéro"}
+$("reset").addEventListener("click",()=>{
+  if(!armed){armed=true;$("reset").classList.add("armed");$("reset").textContent="Touchez encore pour tout effacer";armT=setTimeout(disarm,3000);return}
+  clearTimeout(armT);st={pos:{},done:{},ans:{}};save();disarm();renderHome();
+});
+
+/* ================= LEÇON ================= */
+let cur=0,idx=0,el=null;
+function openModule(i){
+  cur=i;const m=M[i];idx=st.done[m.id]?0:Math.min(st.pos[m.id]||0,m.cards.length-1);
+  document.documentElement.style.setProperty("--c",`var(${m.c})`);
+  $("home").hidden=true;$("lesson").hidden=false;
+  const segs=$("segs");segs.innerHTML="";for(let k=0;k<m.cards.length;k++)segs.appendChild(document.createElement("i"));
+  $("stage").innerHTML="";el=null;show(0);
+}
+function closeModule(){$("lesson").hidden=true;$("home").hidden=false;document.documentElement.style.removeProperty("--c");renderHome()}
+$("close").addEventListener("click",closeModule);
+
+function show(dir){
+  const m=M[cur];const isEnd=idx>=m.cards.length;
+  const card=isEnd?buildEnd(m):buildCard(m.cards[idx],m,idx);
+  card.classList.add("card");if(dir)card.classList.add(dir<0?"in-l":"in-r");
+  $("stage").appendChild(card);
+  if(el){const old=el;old.classList.add(dir<0?"out-r":"out-l");setTimeout(()=>old.remove(),400)}
+  requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.remove("in-l","in-r")));
+  el=card;
+  [...$("segs").children].forEach((s,k)=>s.classList.toggle("on",k<=idx));
+  $("count").textContent=isEnd?"✓":`${idx+1}/${m.cards.length}`;
+  if(!isEnd&&!st.done[m.id]){st.pos[m.id]=Math.max(st.pos[m.id]||0,idx);save()}
+  $("prev").disabled=idx===0;
+  updateNext();
+}
+function updateNext(){
+  const m=M[cur];const n=$("next");
+  if(idx>=m.cards.length){n.disabled=false;n.textContent=cur<M.length-1?"Module suivant":"Retour à l'accueil";return}
+  const c=m.cards[idx];
+  if(c.k==="quiz"&&st.ans[m.id+":"+idx]===undefined){n.disabled=true;n.textContent="Choisissez une réponse";return}
+  n.disabled=false;n.textContent=idx===m.cards.length-1?"Terminer le module":"Continuer";
+}
+function go(d){
+  const m=M[cur];
+  if(d>0){
+    if($("next").disabled)return;
+    if(idx>=m.cards.length){if(cur<M.length-1)openModule(cur+1);else closeModule();return}
+    idx++;if(idx>=m.cards.length){st.done[m.id]=true;st.pos[m.id]=0;save()}
+  }else{if(idx===0)return;idx--}
+  show(d);
+}
+$("next").addEventListener("click",()=>go(1));
+$("prev").addEventListener("click",()=>go(-1));
+document.addEventListener("keydown",e=>{if($("lesson").hidden)return;if(e.key==="ArrowRight")go(1);else if(e.key==="ArrowLeft")go(-1);else if(e.key==="Escape")closeModule()});
+/* balayage */
+let sx=0,sy=0,tracking=false;
+$("stage").addEventListener("touchstart",e=>{if(e.target.closest("input,pre,.rrf"))return;tracking=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+$("stage").addEventListener("touchend",e=>{if(!tracking)return;tracking=false;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.4)go(dx<0?1:-1)},{passive:true});
+
+/* ================= CARTES ================= */
+function kicker(m){const mi=M.indexOf(m);return `<div class="kicker"><span class="ic">${mi<6?mi+1:"✓"}</span>${esc(m.t)}</div>`}
+function rowsHTML(rows,num,warn){return `<div class="rows glass ${warn?"warnbox":""}">${rows.map((r,i)=>`<div class="r">${num?`<span class="ic n">${i+1}</span>`:warn?`<span class="ic n">!</span>`:""}<span class="t"><b>${esc(r[0])}</b><span>${esc(r[1])}</span></span></div>`).join("")}</div>`}
+function buildCard(c,m,i){
+  const d=document.createElement("article");let h=kicker(m);
+  if(c.k==="idea"){h+=`<h2>${c.h}</h2><p class="big-idea">${c.big}</p>${c.sub?`<p class="sub">${esc(c.sub)}</p>`:""}`}
+  else if(c.k==="rows"){h+=`<h2>${c.h}</h2>${rowsHTML(c.rows,c.num)}`}
+  else if(c.k==="warn"){h+=`<h2>${c.h}</h2>${rowsHTML(c.rows,false,true)}`}
+  else if(c.k==="code"){h+=`<h2>${c.h}</h2>${c.lead?`<p class="sub">${esc(c.lead)}</p>`:""}<pre>${hl(c.code)}</pre>`}
+  else if(c.k==="flow"){h+=`<h2>${c.h}</h2><div class="flow">${c.flow.map(f=>{
+      if(f[0]==="a")return `<div class="arrow">${f[1]}</div>`;
+      if(f[0]==="duo")return `<div class="duo">${[f[1],f[2]].map(x=>`<div class="node glass"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("")}</div>`;
+      return `<div class="node ${f[0]==="hl"?"hl":"glass"}"><b>${f[1]}</b><span>${f[2]}</span></div>`}).join("")}</div>`}
+  else if(c.k==="quiz"){d.innerHTML=h;buildQuiz(d,c,m,i);return d}
+  else{h+=`<h2>${c.h}</h2>${c.lead?`<p class="sub">${esc(c.lead)}</p>`:""}`;d.innerHTML=h;({sim:buildSim,rrf:buildRRF,lora:buildLora,vram:buildVram})[c.k](d);return d}
+  d.innerHTML=h;return d;
+}
+function buildQuiz(d,c,m,i){
+  const key=m.id+":"+i;
+  d.insertAdjacentHTML("beforeend",`<div class="qlabel"><span class="ic">?</span>Question</div><p class="qq">${esc(c.q)}</p>`);
+  const opts=document.createElement("div");opts.className="opts";d.appendChild(opts);
+  const btns=c.o.map((o,j)=>{const b=document.createElement("button");b.type="button";b.className="opt glass";b.innerHTML=`<span class="mk"></span><span>${esc(o)}</span>`;
+    b.addEventListener("click",()=>{if(st.ans[key]!==undefined)return;st.ans[key]=j;save();paint(true);updateNext()});opts.appendChild(b);return b});
+  function paint(fresh){const a=st.ans[key];if(a===undefined)return;
+    btns.forEach((b,j)=>{b.disabled=true;const mk=b.firstChild;if(j===c.a){b.classList.add("right");mk.textContent="✓"}else if(j===a){b.classList.add("wrong");mk.textContent="✕"}else b.classList.add("dim")});
+    const ok=a===c.a;const fb=document.createElement("div");fb.className="fb "+(ok?"ok":"ko");fb.innerHTML=`<b>${ok?"Bonne réponse":"Pas tout à fait"}</b><span>${esc(c.w)}</span>`;d.appendChild(fb);
+    if(fresh&&navigator.vibrate)try{navigator.vibrate(ok?15:[20,40,20])}catch(e){}
+    if(fresh)setTimeout(()=>fb.scrollIntoView({behavior:"smooth",block:"nearest"}),50)}
+  paint(false);
+}
+function buildEnd(m){
+  const d=document.createElement("article");d.classList.add("end");
+  const qs=m.cards.map((c,i)=>[c,i]).filter(([c])=>c.k==="quiz");
+  const ok=qs.filter(([c,i])=>st.ans[m.id+":"+i]===c.a).length;
+  const next=M[M.indexOf(m)+1];
+  d.innerHTML=`<span class="ic medal">✓</span><h2>${esc(m.t)}<br>terminé</h2>
+   <div class="stats">${qs.length?`<div class="stat"><span>Quiz réussis</span><b class="acc">${ok}/${qs.length}</b></div>`:""}<div class="stat"><span>Cartes vues</span><b>${m.cards.length}</b></div></div>
+   <p class="sub">${next?`À suivre : ${esc(next.t)}.`:"Vous avez fait le tour. Revenez à la révision express quand vous voulez."}</p>`;
+  return d;
+}
+/* ateliers */
+function buildSim(d){
+  const steps=[["u","Utilisateur","Je prends un parapluie à Lyon ?"],
+   ["m","Modèle · tool_use","Je vérifie la météo.",'{"name": "get_weather",\n "input": {"city": "Lyon"}}'],
+   ["s","Votre code","Exécute get_weather(\"Lyon\") → 14 °C, 3 mm de pluie"],
+   ["u","tool_result","Le résultat repart au modèle.",'{"tool_use_id": "toolu_01",\n "content": "14 °C, 3 mm"}'],
+   ["m","Modèle · end_turn","Oui, prenez-le : 3 mm de pluie prévus."],
+   ["s","Fin","Plus de demande d'outil : la boucle s'arrête."]];
+  const lab=document.createElement("div");lab.className="lab glass";const chat=document.createElement("div");chat.className="chat";
+  const btn=document.createElement("button");btn.type="button";btn.className="pill-btn";let k=0;
+  function add(){const s=steps[k++];const b=document.createElement("div");b.className="bub "+s[0];b.innerHTML=`<small>${esc(s[1])}</small>${esc(s[2])}`;if(s[3]){const p=document.createElement("pre");p.textContent=s[3];b.appendChild(p)}chat.appendChild(b);
+    btn.textContent=k<steps.length?"Étape suivante":"Rejouer";if(k>1)setTimeout(()=>b.scrollIntoView({behavior:"smooth",block:"nearest"}),30)}
+  btn.addEventListener("click",()=>{if(k>=steps.length){chat.innerHTML="";k=0}add()});
+  lab.append(chat,btn);d.appendChild(lab);add();
+}
+function buildRRF(d){
+  const docs=[["Guide de dépannage",1,4],["Erreur E-4012 : bourrage",9,1],["FAQ garantie",2,7],["Installer le pilote",3,3]];
+  const lab=document.createElement("div");lab.className="lab glass";
+  lab.innerHTML=`<div class="rrf">${docs.map((x,i)=>`<div class="rw"><span class="nm">${x[0]}</span><span class="rk" data-r="${i}"></span><div class="ins">Dense <input type="number" inputmode="numeric" min="1" max="50" value="${x[1]}" data-d="${i}" aria-label="Rang dense"> BM25 <input type="number" inputmode="numeric" min="1" max="50" value="${x[2]}" data-b="${i}" aria-label="Rang BM25"><span class="sc" data-s="${i}"></span></div></div>`).join("")}</div>
+   <label><span class="lv">k <b data-k>60</b></span><input type="range" min="1" max="100" value="60" aria-label="Constante k"></label>`;
+  d.appendChild(lab);
+  const q=s=>lab.querySelector(s);
+  function calc(){const k=+q("input[type=range]").value;q("[data-k]").textContent=k;
+    const sc=docs.map((_,i)=>{let s=0;const a=parseInt(q(`[data-d="${i}"]`).value),b=parseInt(q(`[data-b="${i}"]`).value);if(a>0)s+=1/(k+a);if(b>0)s+=1/(k+b);return s});
+    const ord=[...sc.keys()].sort((x,y)=>sc[y]-sc[x]);
+    sc.forEach((s,i)=>{q(`[data-s="${i}"]`).textContent=s.toFixed(4);const r=ord.indexOf(i)+1;const e=q(`[data-r="${i}"]`);e.textContent="#"+r;e.classList.toggle("first",r===1)})}
+  lab.addEventListener("input",calc);calc();
+  d.insertAdjacentHTML("beforeend",`<p class="sub">« Erreur E-4012 » est 9e en dense mais 1er en BM25 : la fusion le fait remonter.</p>`);
+}
 const nf=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1});
-function human(n){return n>=1e6?nf.format(n/1e6)+" M":n>=1e3?nf.format(n/1e3)+" k":String(n)}
-function lora(){const d=+$("dslider").value,r=+$("rslider").value;$("dval").textContent=d;$("rval").textContent=r;
-  const f=d*d,l=r*2*d;$("full").textContent=human(f);$("lora").textContent=human(l);
-  $("ratio").textContent="r × (d + k) = "+new Intl.NumberFormat("fr-FR",{maximumFractionDigits:2}).format(100*l/f)+" %"}
-["dslider","rslider"].forEach(id=>$(id).addEventListener("input",lora));lora();
-function vram(){const p=+$("pslider").value,b=+$("prec").value;$("pval").textContent=p;$("vram").textContent=nf.format(p*b)+" Go"}
-$("pslider").addEventListener("input",vram);$("prec").addEventListener("change",vram);vram();
+const human=n=>n>=1e6?nf.format(n/1e6)+" M":n>=1e3?nf.format(n/1e3)+" k":String(n);
+function buildLora(d){
+  const lab=document.createElement("div");lab.className="lab glass";
+  lab.innerHTML=`<label><span class="lv">Dimension d <b data-o="d">4096</b></span><input type="range" data-i="d" min="1024" max="8192" step="512" value="4096"></label>
+   <label><span class="lv">Rang r <b data-o="r">16</b></span><input type="range" data-i="r" min="1" max="128" value="16"></label>
+   <div class="stats"><div class="stat"><span>Complet</span><b data-o="f"></b></div><div class="stat"><span>LoRA</span><b class="acc" data-o="l"></b></div></div>
+   <p class="sub" data-o="p" style="text-align:center"></p>`;
+  d.appendChild(lab);const o=k=>lab.querySelector(`[data-o="${k}"]`);
+  function calc(){const dd=+lab.querySelector('[data-i="d"]').value,r=+lab.querySelector('[data-i="r"]').value;o("d").textContent=dd;o("r").textContent=r;
+    const f=dd*dd,l=2*r*dd;o("f").textContent=human(f);o("l").textContent=human(l);o("p").textContent=`soit ${new Intl.NumberFormat("fr-FR",{maximumFractionDigits:2}).format(100*l/f)} % des paramètres`}
+  lab.addEventListener("input",calc);calc();
+}
+function buildVram(d){
+  const lab=document.createElement("div");lab.className="lab glass";
+  lab.innerHTML=`<label><span class="lv">Paramètres <b data-o="p">8 Md</b></span><input type="range" min="1" max="120" value="8" aria-label="Milliards de paramètres"></label>
+   <div class="segc" role="group" aria-label="Précision"><button type="button" data-b="2" aria-pressed="true">BF16</button><button type="button" data-b="1" aria-pressed="false">FP8</button><button type="button" data-b="0.5" aria-pressed="false">INT4</button></div>
+   <div class="stats"><div class="stat"><span>Poids</span><b class="acc" data-o="w"></b></div><div class="stat"><span>Avec KV cache</span><b data-o="t"></b></div></div>`;
+  d.appendChild(lab);let by=2;const o=k=>lab.querySelector(`[data-o="${k}"]`);
+  function calc(){const p=+lab.querySelector("input").value;o("p").textContent=p+" Md";o("w").textContent=nf.format(p*by)+" Go";o("t").textContent="~"+nf.format(Math.round(p*by*1.3))+" Go"}
+  lab.querySelectorAll("[data-b]").forEach(b=>b.addEventListener("click",()=>{by=+b.dataset.b;lab.querySelectorAll("[data-b]").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));calc()}));
+  lab.addEventListener("input",calc);calc();
+}
+
+renderHome();
 </script>
 </body>
 </html>

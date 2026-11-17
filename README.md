@@ -9,6 +9,6 @@ Parcours d'une heure, pensé pour le téléphone, pour maîtriser :
 5. **Open-weight** : LoRA, TRL, Unsloth, vLLM
 6. **Assistants de code** : Claude Code, Cursor, Codex, avec un regard critique
 
-Chaque module contient l'idée clé, du code minimal, les pièges et un quiz. Ateliers interactifs : simulateur de boucle, fusion RRF, calcul LoRA, VRAM.
+Une idée par écran : on avance en balayant ou avec le bouton Continuer. Chaque module alterne notions, code minimal, pièges et quiz, avec quatre ateliers interactifs (simulateur de boucle, fusion RRF, calcul LoRA, mémoire GPU).
 
 Tout tient dans un seul fichier, `index.html`, sans dépendance. Ouvrez-le dans un navigateur, ou activez GitHub Pages (Settings → Pages → branche `main`, dossier `/`).
